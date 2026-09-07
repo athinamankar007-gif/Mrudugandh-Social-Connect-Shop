@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Mrudugandh Social Connect"
+description = "A warm, responsive e-commerce storefront for Mrudugandh Social Connect, connecting customers with handmade, sustainable products and the artisans behind them."
+version = "1.0.0"
+id = "artifacts/mrudugandh-shop"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23963
+
+[services.development]
+run = "pnpm --filter @workspace/mrudugandh-shop run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/mrudugandh-shop", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/mrudugandh-shop/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23963"
+BASE_PATH = "/"
