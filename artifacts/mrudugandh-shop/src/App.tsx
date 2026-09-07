@@ -36,8 +36,18 @@ const money = (value: number) => `₹${value.toLocaleString('en-IN')}`;
 function mapApiProduct(product: ApiProduct): Product {
   return {
     ...product,
-    image: product.imagePath ? `/api/storage${product.imagePath}` : null,
+    image: publicImageUrl(product.imagePath),
   };
+}
+
+function publicImageUrl(path: string | null): string | null {
+  if (!path) return null;
+  if (/^https?:\/\//i.test(path)) return path;
+  if (path.startsWith("/api/storage/")) return path;
+  if (path.startsWith("/objects/") || path.startsWith("/public-objects/")) {
+    return `/api/storage${path}`;
+  }
+  return `/api/storage/objects/${path.replace(/^\/+/, "")}`;
 }
 
 type ProductsContextType = { products: Product[]; isLoading: boolean; error: boolean };
@@ -51,7 +61,7 @@ function useProducts() {
 
 function ProductsProvider({ children }: { children: ReactNode }) {
   const { data, isLoading, isError } = useListProducts();
-  const catalog = useMemo(() => data?.map(mapApiProduct) ?? products, [data]);
+  const catalog = useMemo(() => data?.map(mapApiProduct) ?? [], [data]);
   return <ProductsContext.Provider value={{ products: catalog, isLoading, error: isError }}>{children}</ProductsContext.Provider>;
 }
 
@@ -76,7 +86,8 @@ function CartProvider({ children }: { children: ReactNode }) {
 }
 
 function ProductImage({ product, large = false }: { product: Product; large?: boolean }) {
-  if (product.image) return <img src={product.image} alt={product.name} className="h-full w-full object-cover" />;
+  const [imageFailed, setImageFailed] = useState(false);
+  if (product.image && !imageFailed) return <img src={product.image} alt={product.name} onError={() => setImageFailed(true)} className="h-full w-full object-cover" />;
   const icon = product.category === 'Bamboo Products' ? <Leaf /> : product.category === 'Dohars' ? <Sparkles /> : <Package />;
   return <div className={`product-placeholder paper-grain ${large ? 'min-h-[360px]' : 'aspect-[4/3]'} flex flex-col items-center justify-center overflow-hidden bg-[#dff1f6] text-[#174471]`}><div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full border border-[#279ddd]/40 bg-[#edf9fb] text-[#1688c6]">{icon}</div><span className="relative z-10 mt-5 max-w-[70%] text-center font-display text-xl leading-tight">{product.name}</span><small className="relative z-10 mt-2 uppercase tracking-[.22em] text-[10px] text-[#3c6e87]">{product.category}</small></div>;
 }
@@ -108,30 +119,39 @@ function ProductCard({ product }: { product: Product }) {
 }
 
 function Home() {
-  const { products } = useProducts();
-  const featured = products.filter((product) => ['kalamkari-tote-bag', 'bamboo-lights', 'adults-patchwork-dohar'].includes(product.id));
+  const { products, isLoading, error } = useProducts();
+  const visibleProducts = products.filter((product) => product.available !== false);
+  const featured = visibleProducts.filter((product) => ['kalamkari-tote-bag', 'bamboo-lights', 'adults-patchwork-dohar'].includes(product.id));
+  if (isLoading) return <Shell><CatalogMessage title="Loading the collection…" copy="Fetching the latest products." /></Shell>;
+  if (error) return <Shell><CatalogMessage title="The collection is temporarily unavailable" copy="Please refresh in a moment while we reconnect to the catalogue." /></Shell>;
   return <Shell><section className="relative overflow-hidden bg-[#e3f3f7]"><div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-16 sm:py-24 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:py-28"><div className="reveal"><p className="mb-5 flex items-center gap-2 text-xs font-bold uppercase tracking-[.24em] text-[#1688c6]"><span className="h-px w-8 bg-[#efb34f]" /> A thoughtful marketplace</p><h1 className="max-w-xl font-display text-[clamp(3.4rem,8vw,6.7rem)] leading-[.94] tracking-[-.04em] text-[#153a67]">Handmade with <em className="font-normal text-[#1688c6]">purpose.</em><br />Connected with heart.</h1><p className="mt-7 max-w-lg text-base leading-7 text-[#496a7a]">Discover handcrafted products that celebrate traditional skills, support local artisans and bring meaningful craftsmanship into everyday life.</p><div className="mt-9 flex flex-wrap gap-3"><Link href="/shop" className="inline-flex items-center gap-3 rounded-full bg-[#1688c6] px-6 py-3.5 text-sm font-bold text-white transition-transform hover:-translate-y-0.5" data-testid="link-hero-shop">Explore the collection <ArrowRight size={17} /></Link><Link href="/about" className="inline-flex items-center gap-2 rounded-full border border-[#9bcbd8] px-6 py-3.5 text-sm font-bold text-[#31516a] hover:bg-white/50" data-testid="link-hero-story">Our story</Link></div></div><div className="reveal reveal-delay-2 relative flex min-h-[390px] items-center justify-center lg:min-h-[520px]"><div className="absolute h-[340px] w-[340px] rounded-full border border-[#8bcada] lg:h-[480px] lg:w-[480px]" /><div className="absolute h-[270px] w-[270px] rounded-full bg-[#c5e7ed] lg:h-[390px] lg:w-[390px]" /><div className="relative z-10 flex h-60 w-60 rotate-3 flex-col items-center justify-center rounded-[45%_55%_55%_45%] border-8 border-[#f7fcfc] bg-[#edbd58] text-center shadow-[0_20px_50px_rgba(21,58,103,.15)] lg:h-80 lg:w-80"><Sparkles className="mb-5 text-[#153a67]" size={38} /><span className="font-display text-3xl leading-tight text-[#153a67] lg:text-4xl">Objects<br />with a story</span><span className="mt-4 text-[10px] font-bold uppercase tracking-[.22em] text-[#31516a]">made by hand</span></div><div className="absolute bottom-8 left-4 z-10 rounded-xl bg-white px-4 py-3 shadow-lg lg:left-2"><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#1688c6]">Everyday, meaningful</p><p className="mt-1 font-display text-base text-[#173b61]">Made to be kept</p></div></div></div></section><section className="mx-auto max-w-7xl px-5 py-20 lg:px-8"><div className="mb-9 flex flex-wrap items-end justify-between gap-5"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Browse by feeling</p><h2 className="mt-2 font-display text-4xl text-[#173b61]">Find something to keep close</h2></div><Link href="/shop" className="inline-flex items-center gap-2 text-sm font-bold text-[#1688c6]" data-testid="link-view-all">View all products <ArrowRight size={16} /></Link></div><div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{categories.slice(1).map((category, index) => <Link key={category} href={`/shop?category=${encodeURIComponent(category)}`} className={`group flex min-h-[145px] flex-col justify-between rounded-2xl p-5 transition-transform hover:-translate-y-1 ${index % 2 ? 'bg-[#f8e8c6]' : 'bg-[#d9eef2]'}`} data-testid={`link-category-${category.toLowerCase().replaceAll(' ', '-')}`}><span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/70 text-[#1688c6]">{index === 2 ? <Leaf size={18} /> : index === 3 ? <Sparkles size={18} /> : <Package size={18} />}</span><span className="font-display text-xl text-[#173b61]">{category}</span></Link>)}</div></section><section className="bg-[#f9f1df]"><div className="mx-auto max-w-7xl px-5 py-20 lg:px-8"><div className="mb-9 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-[#c1792c]">A few favourites</p><h2 className="mt-2 font-display text-4xl text-[#173b61]">Made for your everyday</h2></div><Link href="/shop" className="inline-flex items-center gap-2 text-sm font-bold text-[#1688c6]" data-testid="link-featured-shop">Shop all <ArrowRight size={16} /></Link></div><div className="grid gap-5 md:grid-cols-3">{featured.map((product) => <ProductCard key={product.id} product={product} />)}</div></div></section><section className="mx-auto grid max-w-7xl gap-10 px-5 py-20 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:px-8"><div className="relative min-h-[300px] overflow-hidden rounded-[2rem] bg-[#174471] p-8 text-[#f5fbfc]"><div className="absolute -right-16 -top-20 h-60 w-60 rounded-full border-[22px] border-[#299cdb]/50" /><div className="absolute -bottom-24 -left-16 h-56 w-56 rounded-full border-[18px] border-[#efb34f]/80" /><HeartHandshake className="relative z-10 mb-16 text-[#efb34f]" size={35} /><p className="relative z-10 max-w-xs font-display text-3xl leading-tight">When you choose handmade, you choose a living tradition.</p></div><div><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Why Mrudugandh</p><h2 className="mt-3 max-w-lg font-display text-4xl leading-tight text-[#173b61]">A small choice can carry a long way.</h2><p className="mt-5 max-w-xl leading-7 text-[#547080]">We make space for traditional skills, thoughtful materials and the people behind every piece. This is not just a catalogue. It is a way to stay connected to craft.</p><Link href="/impact" className="mt-7 inline-flex items-center gap-3 rounded-full bg-[#173b61] px-6 py-3.5 text-sm font-bold text-white" data-testid="link-impact-cta">See our impact <ArrowRight size={17} /></Link></div></section></Shell>;
 }
 
 function Shop() {
-  const { products } = useProducts();
+  const { products, isLoading, error } = useProducts();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All');
   const [sort, setSort] = useState('featured');
-  const categoryOptions = useMemo(() => Array.from(new Set(['All', ...products.map((product) => product.category)])), [products]);
-  const filtered = useMemo(() => products.filter((p) => (category === 'All' || p.category === category) && p.name.toLowerCase().includes(query.toLowerCase())).sort((a, b) => sort === 'low' ? a.price - b.price : sort === 'high' ? b.price - a.price : a.name.localeCompare(b.name)), [products, query, category, sort]);
+  const visibleProducts = products.filter((product) => product.available !== false);
+  const categoryOptions = useMemo(() => Array.from(new Set(['All', ...visibleProducts.map((product) => product.category)])), [visibleProducts]);
+  const filtered = useMemo(() => visibleProducts.filter((p) => (category === 'All' || p.category === category) && p.name.toLowerCase().includes(query.toLowerCase())).sort((a, b) => sort === 'low' ? a.price - b.price : sort === 'high' ? b.price - a.price : a.name.localeCompare(b.name)), [visibleProducts, query, category, sort]);
+  if (isLoading) return <Shell><CatalogMessage title="Loading the collection…" copy="Fetching the latest products." /></Shell>;
+  if (error) return <Shell><CatalogMessage title="The collection is temporarily unavailable" copy="Please refresh in a moment while we reconnect to the catalogue." /></Shell>;
   return <Shell><div className="mx-auto max-w-7xl px-5 pb-24 pt-14 lg:px-8"><div className="mb-11 max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">The collection</p><h1 className="mt-3 font-display text-5xl text-[#173b61] sm:text-6xl">Objects with a story.</h1><p className="mt-4 leading-7 text-[#547080]">Browse handcrafted pieces chosen for their everyday warmth and enduring connection.</p></div><div className="mb-9 grid gap-4 rounded-2xl border border-[#cfe5ea] bg-white p-4 shadow-[0_5px_20px_rgba(17,55,91,.04)] lg:grid-cols-[1fr_auto]"><div className="relative"><Search className="absolute left-3 top-3.5 text-[#7b96a0]" size={18} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search products" className="w-full rounded-xl bg-[#eef7f8] py-3 pl-10 pr-4 text-sm outline-none ring-[#7dc8da] focus:ring-2" data-testid="input-search-products" /></div><div className="flex gap-2 overflow-x-auto pb-1 lg:pb-0">{categoryOptions.map((item) => <button key={item} onClick={() => setCategory(item)} className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-bold transition-colors ${category === item ? 'bg-[#173b61] text-white' : 'bg-[#eef7f8] text-[#547080] hover:bg-[#d9eef2]'}`} data-testid={`button-filter-${item.toLowerCase().replaceAll(' ', '-')}`}>{item}</button>)}</div></div><div className="mb-6 flex items-center justify-between"><p className="text-sm text-[#6b8490]" data-testid="text-result-count">{filtered.length} {filtered.length === 1 ? 'product' : 'products'}</p><label className="flex items-center gap-2 text-xs font-semibold text-[#547080]">Sort by <select value={sort} onChange={(e) => setSort(e.target.value)} className="rounded-lg border border-[#cfe5ea] bg-white px-3 py-2 text-xs text-[#173b61] outline-none" data-testid="select-sort"><option value="featured">Featured</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option></select></label></div>{filtered.length ? <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{filtered.map((product) => <ProductCard key={product.id} product={product} />)}</div> : <div className="rounded-2xl border border-dashed border-[#9ecbd5] bg-[#edf8f9] py-20 text-center"><Search className="mx-auto text-[#1688c6]" size={28} /><h2 className="mt-4 font-display text-2xl text-[#173b61]">No products found</h2><p className="mt-2 text-sm text-[#6b8490]">Try a different search or browse every category.</p><button onClick={() => { setQuery(''); setCategory('All'); }} className="mt-5 text-sm font-bold text-[#1688c6]" data-testid="button-clear-filters">Clear filters</button></div>}</div></Shell>;
 }
 
 function ProductDetail() {
   const [, params] = useRoute('/product/:id');
-  const { products } = useProducts();
+  const { products, isLoading, error } = useProducts();
   const product = products.find((item) => item.id === (params?.id || ''));
   const { add } = useCart();
   const [, setLocation] = useLocation();
   const [variant, setVariant] = useState<Variant | undefined>(product?.variants?.[0]);
   const [quantity, setQuantity] = useState(1);
+  if (isLoading) return <Shell><CatalogMessage title="Loading product…" copy="Fetching the latest product details." /></Shell>;
+  if (error) return <Shell><CatalogMessage title="Product details are temporarily unavailable" copy="Please refresh in a moment while we reconnect to the catalogue." /></Shell>;
   if (!product) return <Shell><Empty title="Product not found" copy="This product is not in the collection." href="/shop" action="Back to shop" /></Shell>;
+  if (product.available === false) return <Shell><Empty title="Product unavailable" copy="This product is not currently available." href="/shop" action="Back to shop" /></Shell>;
   const price = variant?.price ?? product.price;
   const related = products.filter((item) => item.category === product.category && item.id !== product.id).slice(0, 3);
   return <Shell><div className="mx-auto max-w-7xl px-5 pb-20 pt-10 lg:px-8"><Link href="/shop" className="mb-8 inline-flex items-center gap-1 text-sm font-semibold text-[#1688c6]" data-testid="link-back-shop"><ChevronLeft size={17} /> Back to shop</Link><div className="grid gap-12 lg:grid-cols-2 lg:gap-20"><div className="rounded-3xl bg-[#e3f3f7] p-4"><ProductImage product={product} large /></div><div className="self-center"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">{product.category}</p><h1 className="mt-3 font-display text-5xl leading-tight text-[#173b61]">{product.name}</h1><p className="mt-4 text-2xl font-semibold text-[#1688c6]" data-testid="text-product-price">{money(price)}</p><p className="mt-6 max-w-md leading-7 text-[#547080]">{product.description}</p>{product.variants?.length ? <div className="mt-8"><p className="mb-3 text-xs font-bold uppercase tracking-[.15em] text-[#547080]">Choose a size</p><div className="flex gap-3">{product.variants.map((item) => <button key={item.label} onClick={() => setVariant(item)} className={`rounded-xl border px-5 py-3 text-sm font-semibold ${variant?.label === item.label ? 'border-[#1688c6] bg-[#e3f3f7] text-[#1688c6]' : 'border-[#cfe5ea] bg-white text-[#547080]'}`} data-testid={`button-variant-${item.label.toLowerCase()}`}>{item.label} <span className="ml-2 text-xs">{money(item.price)}</span></button>)}</div></div> : null}<div className="mt-8 flex gap-3"><div className="flex items-center rounded-full border border-[#cfe5ea] bg-white"><button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-3 text-[#547080]" aria-label="Decrease quantity" data-testid="button-decrease-quantity"><Minus size={16} /></button><span className="w-8 text-center text-sm font-bold" data-testid="text-product-quantity">{quantity}</span><button onClick={() => setQuantity(quantity + 1)} className="p-3 text-[#547080]" aria-label="Increase quantity" data-testid="button-increase-quantity"><Plus size={16} /></button></div><button onClick={() => { add(product.id, quantity, variant); setLocation('/cart'); }} className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#1688c6] px-6 py-3 text-sm font-bold text-white hover:bg-[#1179ae]" data-testid="button-add-to-cart"><ShoppingBag size={17} /> Add to cart</button></div></div></div>{related.length > 0 && <section className="mt-24 border-t border-[#cfe5ea] pt-12"><h2 className="font-display text-3xl text-[#173b61]">More from {product.category}</h2><div className="mt-7 grid gap-5 sm:grid-cols-3">{related.map((item) => <ProductCard key={item.id} product={item} />)}</div></section>}</div></Shell>;
@@ -139,6 +159,10 @@ function ProductDetail() {
 
 function Empty({ title, copy, href, action }: { title: string; copy: string; href: string; action: string }) {
   return <div className="mx-auto max-w-xl px-5 py-28 text-center"><div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#d9eef2] text-[#1688c6]"><ShoppingBag /></div><h1 className="mt-6 font-display text-4xl text-[#173b61]">{title}</h1><p className="mt-3 text-[#6b8490]">{copy}</p><Link href={href} className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#1688c6] px-6 py-3 text-sm font-bold text-white" data-testid="link-empty-action">{action}<ArrowRight size={16} /></Link></div>;
+}
+
+function CatalogMessage({ title, copy }: { title: string; copy: string }) {
+  return <div className="mx-auto max-w-xl px-5 py-28 text-center"><div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#d9eef2] text-[#1688c6]"><Package /></div><h1 className="mt-6 font-display text-4xl text-[#173b61]">{title}</h1><p className="mt-3 text-[#6b8490]">{copy}</p></div>;
 }
 
 function Cart() {

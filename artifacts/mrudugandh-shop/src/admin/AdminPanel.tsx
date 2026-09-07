@@ -51,7 +51,13 @@ function toDraft(product?: Product): Draft {
 }
 
 function imageUrl(path: string | null): string | null {
-  return path ? `/api/storage${path}` : null;
+  if (!path) return null;
+  if (/^https?:\/\//i.test(path)) return path;
+  if (path.startsWith("/api/storage/")) return path;
+  if (path.startsWith("/objects/") || path.startsWith("/public-objects/")) {
+    return `/api/storage${path}`;
+  }
+  return `/api/storage/objects/${path.replace(/^\/+/, "")}`;
 }
 
 export default function AdminPanel() {

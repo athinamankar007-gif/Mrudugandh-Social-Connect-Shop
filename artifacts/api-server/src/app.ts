@@ -12,6 +12,9 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
+// API responses must always include their JSON body. The generated web client
+// cannot reconstruct a 304 response body from the browser cache.
+app.disable("etag");
 
 app.use(
   pinoHttp({
@@ -36,6 +39,10 @@ app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/api", (_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
 app.use(
   clerkMiddleware((req) => ({
     publishableKey: publishableKeyFromHost(
