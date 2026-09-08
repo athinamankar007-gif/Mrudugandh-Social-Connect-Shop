@@ -13,30 +13,23 @@ import logo from '../../../attached_assets/IMG_4539_1788762132648.JPG';
 import AdminPanel from '@/admin/AdminPanel';
 
 type Variant = { label: string; price: number };
-type Product = { id: string; name: string; category: string; price: number; description: string; variants?: Variant[]; image: string | null; imagePath?: string | null; inventory?: number; available?: boolean };
+type Product = { id: string; name: string; category: string; price: number; description: string; variants?: Variant[]; image: string | null; images: string[]; imagePath?: string | null; imagePaths?: string[]; inventory?: number; available?: boolean };
 type CartLine = { productId: string; quantity: number; variant?: Variant };
 
-// Centralized catalogue. Add a real image path to `image` when photography is available.
-const products: Product[] = [
-  { id: 'kalamkari-tote-bag', name: 'Kalamkari Tote Bag', category: 'Tote Bags', price: 200, description: 'Kalamkari Tote Bag', image: null },
-  { id: 'canvas-tote-bag', name: 'Canvas Tote Bag', category: 'Tote Bags', price: 250, description: 'Canvas Tote Bag', image: null },
-  { id: 'patchwork-tote-bag', name: 'Patchwork Tote Bag', category: 'Tote Bags', price: 450, description: 'Patchwork Tote Bag', image: null },
-  { id: 'wooden-base-piggybank', name: 'Wooden Base Piggybank', category: 'Piggybanks', price: 350, description: 'Wooden Base Piggybank', image: null },
-  { id: 'bamboo-lights', name: 'Bamboo Lights', category: 'Bamboo Products', price: 750, description: 'Bamboo Lights', image: null },
-  { id: 'bamboo-pen-stand', name: 'Bamboo Pen Stand', category: 'Bamboo Products', price: 150, description: 'Bamboo Pen Stand', image: null },
-  { id: 'dupatta', name: 'Dupatta', category: 'Dupattas', price: 1200, description: 'Dupatta', image: null },
-  { id: 'kids-dohar', name: 'Kids Dohar', category: 'Dohars', price: 850, description: 'Kids Dohar', image: null, variants: [{ label: 'Single', price: 850 }, { label: 'Double', price: 1200 }] },
-  { id: 'adults-patchwork-dohar', name: 'Adults Patchwork Dohar', category: 'Dohars', price: 1800, description: 'Adults Patchwork Dohar', image: null, variants: [{ label: 'Single', price: 1800 }, { label: 'Double', price: 2500 }] },
-  { id: 'adult-plain-dohar', name: 'Adult Plain Dohar', category: 'Dohars', price: 1200, description: 'Adult Plain Dohar', image: null, variants: [{ label: 'Single', price: 1200 }, { label: 'Double', price: 2000 }] },
-];
-
-const categories = ['All', 'Tote Bags', 'Piggybanks', 'Bamboo Products', 'Dupattas', 'Dohars'];
 const money = (value: number) => `₹${value.toLocaleString('en-IN')}`;
+const categories = ['All', 'Tote Bags', 'Piggybanks', 'Bamboo Products', 'Dupattas', 'Dohars'];
 
 function mapApiProduct(product: ApiProduct): Product {
+  const storedPaths = product.imagePaths?.length
+    ? product.imagePaths
+    : product.imagePath
+      ? [product.imagePath]
+      : [];
+  const images = storedPaths.map(publicImageUrl).filter((path): path is string => Boolean(path));
   return {
     ...product,
-    image: publicImageUrl(product.imagePath),
+    image: images[0] ?? null,
+    images,
   };
 }
 
@@ -87,9 +80,24 @@ function CartProvider({ children }: { children: ReactNode }) {
 
 function ProductImage({ product, large = false }: { product: Product; large?: boolean }) {
   const [imageFailed, setImageFailed] = useState(false);
-  if (product.image && !imageFailed) return <img src={product.image} alt={product.name} onError={() => setImageFailed(true)} className="h-full w-full object-cover" />;
+  const image = product.images[0] ?? product.image;
+  if (image && !imageFailed) return <img src={image} alt={product.name} onError={() => setImageFailed(true)} className="h-full w-full object-cover" />;
   const icon = product.category === 'Bamboo Products' ? <Leaf /> : product.category === 'Dohars' ? <Sparkles /> : <Package />;
   return <div className={`product-placeholder paper-grain ${large ? 'min-h-[360px]' : 'aspect-[4/3]'} flex flex-col items-center justify-center overflow-hidden bg-[#dff1f6] text-[#174471]`}><div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full border border-[#279ddd]/40 bg-[#edf9fb] text-[#1688c6]">{icon}</div><span className="relative z-10 mt-5 max-w-[70%] text-center font-display text-xl leading-tight">{product.name}</span><small className="relative z-10 mt-2 uppercase tracking-[.22em] text-[10px] text-[#3c6e87]">{product.category}</small></div>;
+}
+
+function ProductGallery({ product }: { product: Product }) {
+  const images = product.images.length ? product.images : product.image ? [product.image] : [];
+  const [selectedImage, setSelectedImage] = useState(images[0] ?? null);
+  const [failedImages, setFailedImages] = useState<string[]>([]);
+  const usableImages = images.filter((image) => !failedImages.includes(image));
+  const activeImage = usableImages.includes(selectedImage ?? "") ? selectedImage : usableImages[0] ?? null;
+
+  if (!activeImage) return <ProductImage product={product} large />;
+  return <div>
+    <div className="overflow-hidden rounded-2xl bg-[#e3f3f7]"><img src={activeImage} alt={product.name} onError={() => setFailedImages((current) => [...new Set([...current, activeImage])])} className="min-h-[360px] w-full object-cover" /></div>
+    {usableImages.length > 1 && <div className="mt-3 grid grid-cols-4 gap-2">{usableImages.map((image, index) => <button key={`${image}-${index}`} type="button" onClick={() => setSelectedImage(image)} className={`overflow-hidden rounded-lg border-2 ${activeImage === image ? 'border-[#1688c6]' : 'border-transparent'}`} aria-label={`View image ${index + 1}`}><img src={image} alt="" className="aspect-square w-full object-cover" /></button>)}</div>}
+  </div>;
 }
 
 function Header() {
@@ -154,7 +162,7 @@ function ProductDetail() {
   if (product.available === false) return <Shell><Empty title="Product unavailable" copy="This product is not currently available." href="/shop" action="Back to shop" /></Shell>;
   const price = variant?.price ?? product.price;
   const related = products.filter((item) => item.category === product.category && item.id !== product.id).slice(0, 3);
-  return <Shell><div className="mx-auto max-w-7xl px-5 pb-20 pt-10 lg:px-8"><Link href="/shop" className="mb-8 inline-flex items-center gap-1 text-sm font-semibold text-[#1688c6]" data-testid="link-back-shop"><ChevronLeft size={17} /> Back to shop</Link><div className="grid gap-12 lg:grid-cols-2 lg:gap-20"><div className="rounded-3xl bg-[#e3f3f7] p-4"><ProductImage product={product} large /></div><div className="self-center"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">{product.category}</p><h1 className="mt-3 font-display text-5xl leading-tight text-[#173b61]">{product.name}</h1><p className="mt-4 text-2xl font-semibold text-[#1688c6]" data-testid="text-product-price">{money(price)}</p><p className="mt-6 max-w-md leading-7 text-[#547080]">{product.description}</p>{product.variants?.length ? <div className="mt-8"><p className="mb-3 text-xs font-bold uppercase tracking-[.15em] text-[#547080]">Choose a size</p><div className="flex gap-3">{product.variants.map((item) => <button key={item.label} onClick={() => setVariant(item)} className={`rounded-xl border px-5 py-3 text-sm font-semibold ${variant?.label === item.label ? 'border-[#1688c6] bg-[#e3f3f7] text-[#1688c6]' : 'border-[#cfe5ea] bg-white text-[#547080]'}`} data-testid={`button-variant-${item.label.toLowerCase()}`}>{item.label} <span className="ml-2 text-xs">{money(item.price)}</span></button>)}</div></div> : null}<div className="mt-8 flex gap-3"><div className="flex items-center rounded-full border border-[#cfe5ea] bg-white"><button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-3 text-[#547080]" aria-label="Decrease quantity" data-testid="button-decrease-quantity"><Minus size={16} /></button><span className="w-8 text-center text-sm font-bold" data-testid="text-product-quantity">{quantity}</span><button onClick={() => setQuantity(quantity + 1)} className="p-3 text-[#547080]" aria-label="Increase quantity" data-testid="button-increase-quantity"><Plus size={16} /></button></div><button onClick={() => { add(product.id, quantity, variant); setLocation('/cart'); }} className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#1688c6] px-6 py-3 text-sm font-bold text-white hover:bg-[#1179ae]" data-testid="button-add-to-cart"><ShoppingBag size={17} /> Add to cart</button></div></div></div>{related.length > 0 && <section className="mt-24 border-t border-[#cfe5ea] pt-12"><h2 className="font-display text-3xl text-[#173b61]">More from {product.category}</h2><div className="mt-7 grid gap-5 sm:grid-cols-3">{related.map((item) => <ProductCard key={item.id} product={item} />)}</div></section>}</div></Shell>;
+  return <Shell><div className="mx-auto max-w-7xl px-5 pb-20 pt-10 lg:px-8"><Link href="/shop" className="mb-8 inline-flex items-center gap-1 text-sm font-semibold text-[#1688c6]" data-testid="link-back-shop"><ChevronLeft size={17} /> Back to shop</Link><div className="grid gap-12 lg:grid-cols-2 lg:gap-20"><div className="rounded-3xl bg-[#e3f3f7] p-4"><ProductGallery product={product} /></div><div className="self-center"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">{product.category}</p><h1 className="mt-3 font-display text-5xl leading-tight text-[#173b61]">{product.name}</h1><p className="mt-4 text-2xl font-semibold text-[#1688c6]" data-testid="text-product-price">{money(price)}</p><p className="mt-6 max-w-md leading-7 text-[#547080]">{product.description}</p>{product.variants?.length ? <div className="mt-8"><p className="mb-3 text-xs font-bold uppercase tracking-[.15em] text-[#547080]">Choose a size</p><div className="flex gap-3">{product.variants.map((item) => <button key={item.label} onClick={() => setVariant(item)} className={`rounded-xl border px-5 py-3 text-sm font-semibold ${variant?.label === item.label ? 'border-[#1688c6] bg-[#e3f3f7] text-[#1688c6]' : 'border-[#cfe5ea] bg-white text-[#547080]'}`} data-testid={`button-variant-${item.label.toLowerCase()}`}>{item.label} <span className="ml-2 text-xs">{money(item.price)}</span></button>)}</div></div> : null}<div className="mt-8 flex gap-3"><div className="flex items-center rounded-full border border-[#cfe5ea] bg-white"><button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-3 text-[#547080]" aria-label="Decrease quantity" data-testid="button-decrease-quantity"><Minus size={16} /></button><span className="w-8 text-center text-sm font-bold" data-testid="text-product-quantity">{quantity}</span><button onClick={() => setQuantity(quantity + 1)} className="p-3 text-[#547080]" aria-label="Increase quantity" data-testid="button-increase-quantity"><Plus size={16} /></button></div><button onClick={() => { add(product.id, quantity, variant); setLocation('/cart'); }} className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#1688c6] px-6 py-3 text-sm font-bold text-white hover:bg-[#1179ae]" data-testid="button-add-to-cart"><ShoppingBag size={17} /> Add to cart</button></div></div></div>{related.length > 0 && <section className="mt-24 border-t border-[#cfe5ea] pt-12"><h2 className="font-display text-3xl text-[#173b61]">More from {product.category}</h2><div className="mt-7 grid gap-5 sm:grid-cols-3">{related.map((item) => <ProductCard key={item.id} product={item} />)}</div></section>}</div></Shell>;
 }
 
 function Empty({ title, copy, href, action }: { title: string; copy: string; href: string; action: string }) {

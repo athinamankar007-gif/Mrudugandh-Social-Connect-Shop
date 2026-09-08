@@ -93,7 +93,8 @@ router.post("/products", requireAdmin, async (req, res): Promise<void> => {
     category: parsed.data.category,
     description: parsed.data.description,
     price: parsed.data.price,
-    imagePath: parsed.data.imagePath ?? null,
+    imagePath: parsed.data.imagePaths?.[0] ?? parsed.data.imagePath ?? null,
+    imagePaths: parsed.data.imagePaths ?? (parsed.data.imagePath ? [parsed.data.imagePath] : []),
     variants: parsed.data.variants ?? [],
     inventory: parsed.data.inventory ?? 0,
     available: parsed.data.available ?? true,
@@ -121,9 +122,14 @@ router.patch("/products/:id", requireAdmin, async (req, res): Promise<void> => {
     return;
   }
 
+  const updateData = { ...parsed.data, updatedAt: new Date() };
+  if (parsed.data.imagePaths !== undefined) {
+    updateData.imagePath = parsed.data.imagePaths[0] ?? null;
+  }
+
   const [product] = await db
     .update(productsTable)
-    .set({ ...parsed.data, updatedAt: new Date() })
+    .set(updateData)
     .where(eq(productsTable.id, params.data.id))
     .returning();
 

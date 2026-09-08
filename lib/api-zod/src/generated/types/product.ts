@@ -16,6 +16,7 @@ export interface Product {
   price: number;
   /** @nullable */
   imagePath: string | null;
+  imagePaths: string[];
   variants: ProductVariant[];
   /** @minimum 0 */
   inventory: number;

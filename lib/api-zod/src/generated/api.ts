@@ -36,6 +36,7 @@ export const ListProductsResponseItem = zod.object({
   "description": zod.string(),
   "price": zod.number().int().min(listProductsResponsePriceMin),
   "imagePath": zod.string().nullable(),
+  "imagePaths": zod.array(zod.string()),
   "variants": zod.array(zod.object({
   "label": zod.string().min(1),
   "price": zod.number().int().min(listProductsResponseVariantsItemPriceMin)
@@ -70,6 +71,7 @@ export const CreateProductBody = zod.object({
   "description": zod.string(),
   "price": zod.number().int().min(createProductBodyPriceMin),
   "imagePath": zod.string().nullish(),
+  "imagePaths": zod.array(zod.string()).optional(),
   "variants": zod.array(zod.object({
   "label": zod.string().min(1),
   "price": zod.number().int().min(createProductBodyVariantsItemPriceMin)
@@ -94,6 +96,7 @@ export const CreateProductResponse = zod.object({
   "description": zod.string(),
   "price": zod.number().int().min(createProductResponsePriceMin),
   "imagePath": zod.string().nullable(),
+  "imagePaths": zod.array(zod.string()),
   "variants": zod.array(zod.object({
   "label": zod.string().min(1),
   "price": zod.number().int().min(createProductResponseVariantsItemPriceMin)
@@ -128,6 +131,7 @@ export const GetProductResponse = zod.object({
   "description": zod.string(),
   "price": zod.number().int().min(getProductResponsePriceMin),
   "imagePath": zod.string().nullable(),
+  "imagePaths": zod.array(zod.string()),
   "variants": zod.array(zod.object({
   "label": zod.string().min(1),
   "price": zod.number().int().min(getProductResponseVariantsItemPriceMin)
@@ -163,6 +167,7 @@ export const UpdateProductBody = zod.object({
   "description": zod.string().optional(),
   "price": zod.number().int().min(updateProductBodyPriceMin).optional(),
   "imagePath": zod.string().nullish(),
+  "imagePaths": zod.array(zod.string()).optional(),
   "variants": zod.array(zod.object({
   "label": zod.string().min(1),
   "price": zod.number().int().min(updateProductBodyVariantsItemPriceMin)
@@ -187,6 +192,7 @@ export const UpdateProductResponse = zod.object({
   "description": zod.string(),
   "price": zod.number().int().min(updateProductResponsePriceMin),
   "imagePath": zod.string().nullable(),
+  "imagePaths": zod.array(zod.string()),
   "variants": zod.array(zod.object({
   "label": zod.string().min(1),
   "price": zod.number().int().min(updateProductResponseVariantsItemPriceMin)

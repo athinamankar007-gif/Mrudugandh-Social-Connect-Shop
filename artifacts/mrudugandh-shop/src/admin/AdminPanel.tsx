@@ -19,6 +19,7 @@ type Draft = {
   description: string;
   price: string;
   imagePath: string | null;
+  imagePaths: string[];
   variants: ProductVariant[];
   inventory: string;
   available: boolean;
@@ -30,6 +31,7 @@ const emptyDraft: Draft = {
   description: "",
   price: "",
   imagePath: null,
+  imagePaths: [],
   variants: [],
   inventory: "0",
   available: true,
@@ -43,7 +45,8 @@ function toDraft(product?: Product): Draft {
     category: product.category,
     description: product.description,
     price: String(product.price),
-    imagePath: product.imagePath,
+    imagePath: product.imagePaths?.[0] ?? product.imagePath,
+    imagePaths: product.imagePaths?.length ? [...product.imagePaths] : product.imagePath ? [product.imagePath] : [],
     variants: product.variants.map((variant) => ({ ...variant })),
     inventory: String(product.inventory),
     available: product.available,
@@ -96,12 +99,19 @@ export default function AdminPanel() {
 
   const { uploadFile, isUploading, progress, error: uploadError } = useUpload();
   const handleImage = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const response = await uploadFile(file);
-    if (response) {
-      setDraft((current) => ({ ...current, imagePath: response.objectPath }));
-      setNotice("Image uploaded. Save the product to publish it.");
+    const files = Array.from(event.target.files ?? []);
+    if (!files.length) return;
+    const uploadedPaths: string[] = [];
+    for (const file of files) {
+      const response = await uploadFile(file);
+      if (response) uploadedPaths.push(response.objectPath);
+    }
+    if (uploadedPaths.length) {
+      setDraft((current) => {
+        const imagePaths = [...current.imagePaths, ...uploadedPaths];
+        return { ...current, imagePaths, imagePath: imagePaths[0] ?? null };
+      });
+      setNotice(`${uploadedPaths.length} image${uploadedPaths.length === 1 ? "" : "s"} uploaded. Save the product to publish them.`);
     }
     event.target.value = "";
   };
@@ -126,7 +136,8 @@ export default function AdminPanel() {
       category: draft.category.trim(),
       description: draft.description.trim(),
       price,
-      imagePath: draft.imagePath,
+      imagePath: draft.imagePaths[0] ?? draft.imagePath,
+      imagePaths: draft.imagePaths,
       variants: draft.variants.filter((variant) => variant.label.trim()),
       inventory,
       available: draft.available,
@@ -210,9 +221,9 @@ export default function AdminPanel() {
           <label className="mt-5 block text-sm font-semibold text-[#31516a]">Description<textarea rows={4} value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} className="mt-2 w-full rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] p-3 font-normal outline-none focus:border-[#1688c6]" /></label>
 
           <div className="mt-6 rounded-xl bg-[#f7fcfc] p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm font-bold text-[#31516a]">Product image</p><label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#9bcbd8] px-4 py-2 text-xs font-bold text-[#1688c6]"><ImagePlus size={14} /> {isUploading ? `Uploading ${progress}%` : "Upload image"}<input type="file" accept="image/*" onChange={handleImage} disabled={isUploading} className="hidden" /></label></div>
-            {imageUrl(draft.imagePath) && <img src={imageUrl(draft.imagePath) ?? ""} alt="Product preview" className="mt-4 h-36 w-36 rounded-xl object-cover" />}
-            <p className="mt-2 text-xs text-[#6a8390]">Use a clear product photo. Images are stored persistently and appear on the shop after saving.</p>
+             <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm font-bold text-[#31516a]">Product images</p><label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#9bcbd8] px-4 py-2 text-xs font-bold text-[#1688c6]"><ImagePlus size={14} /> {isUploading ? `Uploading ${progress}%` : "Upload images"}<input type="file" accept="image/*" multiple onChange={handleImage} disabled={isUploading} className="hidden" /></label></div>
+             {draft.imagePaths.length > 0 && <div className="mt-4 grid grid-cols-4 gap-2">{draft.imagePaths.map((path, index) => <div key={path} className="group relative overflow-hidden rounded-xl"><img src={imageUrl(path) ?? ""} alt={`Product image ${index + 1}`} className="aspect-square w-full object-cover" /><button type="button" onClick={() => setDraft((current) => { const imagePaths = current.imagePaths.filter((_, itemIndex) => itemIndex !== index); return { ...current, imagePaths, imagePath: imagePaths[0] ?? null }; })} className="absolute right-1 top-1 rounded-full bg-white/90 p-1 text-[#a84e47] opacity-0 shadow transition-opacity group-hover:opacity-100" aria-label={`Remove image ${index + 1}`}><X size={13} /></button></div>)}</div>}
+             <p className="mt-2 text-xs text-[#6a8390]">Upload multiple product photos together. Images are stored persistently and appear on the shop after saving.</p>
           </div>
 
           <div className="mt-6">

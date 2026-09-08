@@ -300,6 +300,10 @@ components:
           minimum: 0
         imagePath:
           type: ["string", "null"]
+        imagePaths:
+          type: array
+          items:
+            type: string
         variants:
           type: array
           items:
@@ -315,7 +319,7 @@ components:
         updatedAt:
           type: string
           format: date-time
-      required: [id, name, category, description, price, imagePath, variants, inventory, available, createdAt, updatedAt]
+      required: [id, name, category, description, price, imagePath, imagePaths, variants, inventory, available, createdAt, updatedAt]
     ProductInput:
       type: object
       properties:
@@ -335,6 +339,10 @@ components:
           minimum: 0
         imagePath:
           type: ["string", "null"]
+        imagePaths:
+          type: array
+          items:
+            type: string
         variants:
           type: array
           items:
@@ -361,6 +369,10 @@ components:
           minimum: 0
         imagePath:
           type: ["string", "null"]
+        imagePaths:
+          type: array
+          items:
+            type: string
         variants:
           type: array
           items:

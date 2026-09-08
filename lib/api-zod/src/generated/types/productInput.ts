@@ -19,6 +19,7 @@ export interface ProductInput {
   price: number;
   /** @nullable */
   imagePath?: string | null;
+  imagePaths?: string[];
   variants?: ProductVariant[];
   /** @minimum 0 */
   inventory?: number;
