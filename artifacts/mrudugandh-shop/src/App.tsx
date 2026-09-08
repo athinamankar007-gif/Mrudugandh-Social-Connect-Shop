@@ -17,7 +17,7 @@ type Product = { id: string; name: string; category: string; price: number; desc
 type CartLine = { productId: string; quantity: number; variant?: Variant };
 
 const money = (value: number) => `₹${value.toLocaleString('en-IN')}`;
-const categories = ['All', 'Tote Bags', 'Piggybanks', 'Bamboo Products', 'Dupattas', 'Dohars'];
+const categories = ['All', 'Tote Bags', 'Piggybanks', 'Bamboo Products', 'Dupattas', 'Dohars', 'Shawls'];
 
 function mapApiProduct(product: ApiProduct): Product {
   const storedPaths = product.imagePaths?.length

@@ -25,6 +25,7 @@ const seedProducts = [
   { id: "bamboo-lights", name: "Bamboo Lights", category: "Bamboo Products", price: 750, description: "Bamboo Lights", variants: [], inventory: 0, available: true },
   { id: "bamboo-pen-stand", name: "Bamboo Pen Stand", category: "Bamboo Products", price: 150, description: "Bamboo Pen Stand", variants: [], inventory: 0, available: true },
   { id: "dupatta", name: "Dupatta", category: "Dupattas", price: 1200, description: "Dupatta", variants: [], inventory: 0, available: true },
+  { id: "shawl", name: "Shawl", category: "Shawls", price: 750, description: "Shawl", variants: [], inventory: 0, available: true },
   { id: "kids-dohar", name: "Kids Dohar", category: "Dohars", price: 850, description: "Kids Dohar", variants: [{ label: "Single", price: 850 }, { label: "Double", price: 1200 }], inventory: 0, available: true },
   { id: "adults-patchwork-dohar", name: "Adults Patchwork Dohar", category: "Dohars", price: 1800, description: "Adults Patchwork Dohar", variants: [{ label: "Single", price: 1800 }, { label: "Double", price: 2500 }], inventory: 0, available: true },
   { id: "adult-plain-dohar", name: "Adult Plain Dohar", category: "Dohars", price: 1200, description: "Adult Plain Dohar", variants: [{ label: "Single", price: 1200 }, { label: "Double", price: 2000 }], inventory: 0, available: true },
