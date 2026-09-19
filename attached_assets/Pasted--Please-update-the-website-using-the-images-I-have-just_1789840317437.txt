@@ -1,0 +1,28 @@
+"Please update the website using the images I have just uploaded in this chat. Crucial rule: Do not change the existing color scheme, fonts, or overall layout design. Only update the content, functionality, and ordering exactly as specified below:
+1. Naming Corrections
+⚬	Rename 'Bamboo Triveties/Bamboo TVD' to exactly 'Trivets'.
+⚬	Rename 'wooden base piggy bank' to exactly 'Gullak (Piggybank)' across the entire site (including descriptions).
+2. Image Mapping (Use Chat Uploads)
+⚬	Apply my uploaded 'Super king size bedsheet' image to the Superking size bedsheet product.
+⚬	Apply my uploaded 'plain dohar' images to the Plain Dohar category.
+⚬	Apply my uploaded 'kids dohar' images to the Kids Dohar category.
+3. Exact Product Display Order (Shop Section)
+Rearrange the shop inventory so the products appear in this exact top-to-bottom order:
+⚬	Row 1: Canvas Tote Bag, Kalamkari Tote Bag, Patchwork Tote Bag.
+⚬	Row 2: Kantha work dupatta, Kantha Patchwork stole, Kantha plain stole.
+⚬	Row 3: Bedsheets (Single, King, Superking).
+⚬	Row 4: Plain dohar, Patchwork dohar, Kids dohar, and Combo set.
+⚬	Row 5: All Bamboo products (Lights, Pen, Pen Stand, Toothbrush, Trivets, Comb, 3-in-one stand).
+⚬	Row 6: Gullak (Piggybank).
+4. Text Content Updates (Our Story & Our Impact)
+⚬	Our Story Section: Replace the current text with this: 'Mrudugandh Social Connect is a social enterprise initiative dedicated to creating sustainable market access for grassroots producers, women entrepreneurs, artisans, underprivileged individuals and community-based organisations. We work as a bridge between those who create and those who consume—bringing authentic handmade products and community-led enterprises into urban markets through exhibitions, stalls, promotional campaigns and direct customer outreach.' Ensure this text is translated and displayed in both English and Marathi. Keep the 'Volunteer Registration Link' button here.
+⚬	Our Impact Section: Add this text: 'Mrudugandh has developed a growing ecosystem of organisations and individual beneficiaries whose products and skills we support through market access and promotion. We source and promote bamboo products from Sampurna Bamboo Kendra, Melghat, which are made by tribals, supporting community-based livelihoods. We collaborate with Corvee Foundation and ICS Foundation, Pune, promoting products created by their community beneficiaries, including those from denotified tribal communities.'
+⚬	Impact Gallery: Below the 'Our Impact' text, create a beautiful photo grid/slider using the 7 images I uploaded showing our tribal women, stalls, and beneficiaries.
+5. New Functionality: Reviews, User Accounts & Admin Panel UI
+⚬	Review Feature: Change the 'Write to us' / contact section title to 'Give us a review about your product!' Change the submit button to 'Submit Review'. Add a 'File Upload' button so customers can attach photos of their purchases.
+⚬	Customer Accounts: Add a 'Login / Account' icon in the main navigation. Create a user profile page that includes a 'View My Orders' section for purchase history.
+⚬	Admin Dashboard: Create a hidden 'Admin Login' route (e.g., /admin) that asks for a password, leading to a basic Admin Dashboard interface.”….. 1. Password Setup: Set the hardcoded password for the /admin login screen to 'admin123' for demonstration purposes.
+2. Admin Variant Structure:
+⚬	Stop grouping all bedsheets into one single admin entry.
+⚬	Inside the Admin Panel's 'Bedsheets' section, create distinct, separate edit sections for the variants: 'Single', 'King Size', and 'Superking Size'.
+⚬	Each of these variants must have its own dedicated image upload button, price field, and save button.
