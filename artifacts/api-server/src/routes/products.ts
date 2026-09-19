@@ -21,15 +21,23 @@ const seedProducts = [
   { id: "kalamkari-tote-bag", name: "Kalamkari Tote Bag", category: "Tote Bags", price: 200, description: "Kalamkari Tote Bag", variants: [], inventory: 0, available: true },
   { id: "canvas-tote-bag", name: "Canvas Tote Bag", category: "Tote Bags", price: 250, description: "Canvas Tote Bag", variants: [], inventory: 0, available: true },
   { id: "patchwork-tote-bag", name: "Patchwork Tote Bag", category: "Tote Bags", price: 450, description: "Patchwork Tote Bag", variants: [], inventory: 0, available: true },
-  { id: "wooden-base-piggybank", name: "Wooden Base Piggybank", category: "Piggybanks", price: 350, description: "Wooden Base Piggybank", variants: [], inventory: 0, available: true },
+  { id: "wooden-base-piggybank", name: "Wooden Base Piggybank", category: "Gullak (Piggybank)", price: 350, description: "Wooden Base Piggybank", variants: [], inventory: 0, available: true },
+  { id: "bamboo-three-in-one-stand", name: "Bamboo 3-in-one Stand", category: "Bamboo Products", price: 850, description: "Bamboo 3-in-one Stand", variants: [], inventory: 0, available: true },
   { id: "bamboo-lights", name: "Bamboo Lights", category: "Bamboo Products", price: 750, description: "Bamboo Lights", variants: [], inventory: 0, available: true },
   { id: "bamboo-pen-stand", name: "Bamboo Pen Stand", category: "Bamboo Products", price: 150, description: "Bamboo Pen Stand", variants: [], inventory: 0, available: true },
-  { id: "dupatta", name: "Dupatta", category: "Dupattas", price: 1200, description: "Dupatta", variants: [], inventory: 0, available: true },
-  { id: "shawl", name: "Shawl", category: "Shawls", price: 750, description: "Shawl", variants: [], inventory: 0, available: true },
-  { id: "kids-dohar", name: "Kids Dohar", category: "Dohars", price: 850, description: "Kids Dohar", variants: [{ label: "Single", price: 850 }, { label: "Double", price: 1200 }], inventory: 0, available: true },
-  { id: "adults-patchwork-dohar", name: "Adults Patchwork Dohar", category: "Dohars", price: 1800, description: "Adults Patchwork Dohar", variants: [{ label: "Single", price: 1800 }, { label: "Double", price: 2500 }], inventory: 0, available: true },
-  { id: "adult-plain-dohar", name: "Adult Plain Dohar", category: "Dohars", price: 1200, description: "Adult Plain Dohar", variants: [{ label: "Single", price: 1200 }, { label: "Double", price: 2000 }], inventory: 0, available: true },
-];
+  { id: "bamboo-tray", name: "Bamboo Trivets / बांबूची तिवई (Bamboo chi Tivai)", category: "Bamboo Products", price: 150, description: "Bamboo Trivets / बांबूची तिवई (Bamboo chi Tivai)", variants: [], inventory: 0, available: true },
+  { id: "bamboo-pen", name: "Bamboo Pen", category: "Bamboo Products", price: 150, description: "Bamboo Pen", variants: [], inventory: 0, available: true },
+  { id: "bamboo-toothbrush", name: "Bamboo Toothbrush", category: "Bamboo Products", price: 100, description: "Bamboo Toothbrush", variants: [], inventory: 0, available: true },
+  { id: "bamboo-comb", name: "Bamboo Comb", category: "Bamboo Products", price: 250, description: "Bamboo Comb", variants: [], inventory: 0, available: true },
+  { id: "dupatta", name: "Kantha Work Dupatta", category: "Stoles and Dupattas", price: 1200, description: "Kantha Work Dupatta", variants: [], inventory: 0, available: true },
+  { id: "shawl", name: "Kantha Patchwork Stole", category: "Stoles and Dupattas", price: 750, description: "Kantha Patchwork Stole", variants: [], inventory: 0, available: true },
+  { id: "kantha-plain-stole", name: "Kantha Plain Stole", category: "Stoles and Dupattas", price: 700, description: "Kantha Plain Stole", variants: [], inventory: 0, available: true },
+  { id: "bedsheet", name: "Bedsheet", category: "Bedsheets", price: 600, description: "Handcrafted bedsheet", variants: [{ label: "Single (5/7)", price: 600 }, { label: "Two Pieces", price: 1000 }, { label: "King Size (7.5/9)", price: 1300 }, { label: "Superking Size (9/9)", price: 1800 }], inventory: 0, available: true },
+  { id: "dohars-combo-set", name: "Dohars Combo Set", category: "Dohars", price: 3500, description: "One bedsheet, two pillow covers and one dohar", variants: [], inventory: 0, available: true },
+  { id: "kids-dohar", name: "Kids Dohar", category: "Dohars", price: 850, description: "Kids Dohar", variants: [{ label: "Junior Champ (3/5)", price: 850 }, { label: "Senior Champ (5/7)", price: 1200 }], inventory: 0, available: true },
+  { id: "adults-patchwork-dohar", name: "Patchwork Dohar", category: "Dohars", price: 1800, description: "Patchwork Dohar", variants: [{ label: "Single (5.5 - 7.5)", price: 1800 }, { label: "Double (7.5 - 9)", price: 2500 }], inventory: 0, available: true },
+  { id: "adult-plain-dohar", name: "Plain Dohar", category: "Dohars", price: 1200, description: "Plain Dohar", variants: [{ label: "Single (5/7)", price: 1200 }, { label: "Double (7.5/8.5)", price: 2000 }], inventory: 0, available: true },
+].map((product) => ({ ...product, imagePath: null, imagePaths: [] }));
 
 let seedPromise: Promise<void> | null = null;
 
