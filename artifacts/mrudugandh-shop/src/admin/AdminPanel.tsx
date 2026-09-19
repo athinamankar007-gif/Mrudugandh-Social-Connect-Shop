@@ -172,6 +172,15 @@ export default function AdminPanel() {
 
   const busy = createProduct.isPending || updateProduct.isPending || deleteProduct.isPending;
   const products = productsQuery.data ?? [];
+  const groupedProducts = useMemo(() => {
+    const groups: Record<string, Product[]> = {};
+    products.forEach((product) => {
+      const cat = product.category || 'Uncategorized';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(product);
+    });
+    return groups;
+  }, [products]);
 
   return (
     <div className="mx-auto max-w-7xl px-5 pb-24 pt-10 lg:px-8">
@@ -192,14 +201,21 @@ export default function AdminPanel() {
       <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
         <aside className="h-fit rounded-2xl border border-[#cfe5ea] bg-white p-3">
           <p className="px-3 pb-3 pt-2 text-xs font-bold uppercase tracking-[.16em] text-[#6a8390]">{products.length} products</p>
-          <div className="space-y-1">
-            {products.map((product) => (
-              <button key={product.id} type="button" onClick={() => selectProduct(product)} className={`flex w-full items-center gap-3 rounded-xl p-3 text-left transition-colors ${selectedId === product.id ? "bg-[#e3f3f7]" : "hover:bg-[#f5fbfc]"}`}>
-                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#e3f3f7]">
-                  {imageUrl(product.imagePath) ? <img src={imageUrl(product.imagePath) ?? ""} alt="" className="h-full w-full object-cover" /> : <ImagePlus className="m-3 text-[#1688c6]" size={24} />}
+          <div className="space-y-4">
+            {Object.entries(groupedProducts).map(([category, categoryProducts]) => (
+              <div key={category}>
+                <h3 className="px-3 pb-2 text-xs font-bold text-[#173b61] uppercase tracking-wider">{category}</h3>
+                <div className="space-y-1">
+                  {categoryProducts.map((product) => (
+                    <button key={product.id} type="button" onClick={() => selectProduct(product)} className={`flex w-full items-center gap-3 rounded-xl p-3 text-left transition-colors ${selectedId === product.id ? "bg-[#e3f3f7]" : "hover:bg-[#f5fbfc]"}`}>
+                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#e3f3f7]">
+                        {imageUrl(product.imagePath) ? <img src={imageUrl(product.imagePath) ?? ""} alt="" className="h-full w-full object-cover" /> : <ImagePlus className="m-3 text-[#1688c6]" size={24} />}
+                      </div>
+                      <span className="min-w-0"><strong className="block truncate text-sm text-[#173b61]">{product.name}</strong><small className="text-xs text-[#6a8390]">{product.available ? "Available" : "Hidden"}</small></span>
+                    </button>
+                  ))}
                 </div>
-                <span className="min-w-0"><strong className="block truncate text-sm text-[#173b61]">{product.name}</strong><small className="text-xs text-[#6a8390]">{product.available ? "Available" : "Hidden"}</small></span>
-              </button>
+              </div>
             ))}
           </div>
         </aside>

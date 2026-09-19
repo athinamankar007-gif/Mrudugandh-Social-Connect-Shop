@@ -1,6 +1,6 @@
 import { createContext, type ChangeEvent, type FormEvent, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ClerkProvider, Show, SignIn, SignUp } from '@clerk/react';
+import { ClerkProvider, Show, SignIn, SignUp, useUser, UserButton } from '@clerk/react';
 import { shadcn } from '@clerk/themes';
 import { useListProducts, type Product as ApiProduct } from '@workspace/api-client-react';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -8,9 +8,29 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Link, Route, Switch, useLocation, useRoute, Router as WouterRouter } from 'wouter';
-import { ArrowRight, ChevronLeft, CircleCheck, HeartHandshake, Leaf, Menu, Minus, Package, Plus, Search, ShoppingBag, Sparkles, Trash2, Users, X } from 'lucide-react';
+import { ArrowRight, ChevronLeft, CircleCheck, HeartHandshake, Leaf, Menu, Minus, Package, Plus, Search, ShoppingBag, Sparkles, Trash2, Users, X, User } from 'lucide-react';
 import logo from '../../../attached_assets/IMG_4539_1788762132648.JPG';
 import AdminPanel from '@/admin/AdminPanel';
+
+import superkingImg1 from '../../../attached_assets/_super_king_bedsheet_1789840344688.jpg';
+import superkingImg2 from '../../../attached_assets/PHOTO-2026-09-17-22-39-27_1789840347073.jpg';
+import superkingImg3 from '../../../attached_assets/PHOTO-2026-09-17-22-39-27_2_1789840349657.jpg';
+import kingImg1 from '../../../attached_assets/PHOTO-2026-09-17-22-11-12_1789840352323.jpg';
+import kidsDoharImg1 from '../../../attached_assets/PHOTO-2026-09-19-16-15-50_2_1789840360591.jpg';
+import kidsDoharImg2 from '../../../attached_assets/PHOTO-2026-09-19-16-15-50_1789840363146.jpg';
+import kidsDoharImg3 from '../../../attached_assets/PHOTO-2026-09-19-16-15-51_1789840358543.jpg';
+import plainDoharImg1 from '../../../attached_assets/PHOTO-2026-09-08-19-06-23_1789840368031.jpg';
+import plainDoharImg2 from '../../../attached_assets/PHOTO-2026-09-08-19-46-03_1789840371266.jpg';
+import plainDoharImg3 from '../../../attached_assets/PHOTO-2026-09-08-19-46-12_1789840374181.jpg';
+import plainDoharImg4 from '../../../attached_assets/PHOTO-2026-09-08-19-45-45_1789840377036.jpg';
+
+import galleryImg0 from '../../../attached_assets/0_PHOTO-2026-09-19-15-10-28_1789840839387.jpg';
+import galleryImg1 from '../../../attached_assets/1_PHOTO-2026-09-19-15-10-29_1789840839387.jpg';
+import galleryImg2 from '../../../attached_assets/2_PHOTO-2026-09-19-15-10-32_1789840839387.jpg';
+import galleryImg3 from '../../../attached_assets/3_PHOTO-2026-09-19-15-10-33_1789840839387.jpg';
+import galleryImg4 from '../../../attached_assets/4_PHOTO-2026-09-19-15-10-34_1789840839387.jpg';
+import galleryImg5 from '../../../attached_assets/5_PHOTO-2026-09-19-15-10-37_1789840839387.jpg';
+import galleryImg6 from '../../../attached_assets/6_PHOTO-2026-09-19-15-10-38_1789840839387.jpg';
 
 type Variant = { label: string; price: number };
 type Product = { id: string; name: string; category: string; price: number; description: string; variants?: Variant[]; image: string | null; images: string[]; imagePath?: string | null; imagePaths?: string[]; inventory?: number; available?: boolean };
@@ -19,13 +39,42 @@ type CartLine = { productId: string; quantity: number; variant?: Variant };
 const money = (value: number) => `₹${value.toLocaleString('en-IN')}`;
 const categoryOrder = ['Tote Bags', 'Bamboo Products', 'Stoles and Dupattas', 'Bedsheets', 'Dohars', 'Gullak (Piggybank)'];
 
+const exactProductOrder = [
+  'canvas-tote-bag', 'kalamkari-tote-bag', 'patchwork-tote-bag',
+  'dupatta', 'shawl', 'kantha-plain-stole',
+  'bedsheet', 'king-size-bedsheet', 'superking-size-bedsheet',
+  'adult-plain-dohar', 'adults-patchwork-dohar', 'kids-dohar', 'dohars-combo-set',
+  'bamboo-lights', 'bamboo-pen', 'bamboo-pen-stand', 'bamboo-toothbrush',
+  'bamboo-tray', 'bamboo-comb', 'bamboo-three-in-one-stand', 'wooden-base-piggybank'
+];
+
+function getSortIndex(id: string) {
+  const index = exactProductOrder.indexOf(id);
+  return index !== -1 ? index : 999;
+}
+
 function mapApiProduct(product: ApiProduct): Product {
   const storedPaths = product.imagePaths?.length
     ? product.imagePaths
     : product.imagePath
       ? [product.imagePath]
       : [];
-  const images = storedPaths.map(publicImageUrl).filter((path): path is string => Boolean(path));
+  const apiImages = storedPaths.map(publicImageUrl).filter((path): path is string => Boolean(path));
+
+  let localImages: string[] = [];
+  const lowerName = product.name.toLowerCase();
+  if (lowerName.includes('superking') || lowerName.includes('super king')) {
+    localImages = [superkingImg1, superkingImg2, superkingImg3];
+  } else if (lowerName.includes('king size') || lowerName === 'king bedsheet') {
+    localImages = [kingImg1];
+  } else if (lowerName.includes('kids dohar')) {
+    localImages = [kidsDoharImg1, kidsDoharImg2, kidsDoharImg3];
+  } else if (lowerName.includes('plain dohar')) {
+    localImages = [plainDoharImg1, plainDoharImg2, plainDoharImg3, plainDoharImg4];
+  }
+
+  const images = apiImages.length > 0 ? apiImages : localImages;
+
   return {
     ...product,
     image: images[0] ?? null,
@@ -109,7 +158,7 @@ function Header() {
     <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-5 lg:px-8">
       <Link href="/" className="flex items-center gap-3" data-testid="link-logo"><img src={logo} alt="Mrudugandh Social Connect" className="h-12 w-12 rounded-full object-cover" /><span className="hidden text-sm font-bold tracking-[.16em] text-[#153a67] sm:block">MRUDUGANDH <span className="block text-[9px] font-medium tracking-[.36em] text-[#1996d3]">SOCIAL CONNECT</span></span></Link>
       <nav className="hidden items-center gap-8 md:flex">{links.map(([label, href]) => <Link key={href} href={href} className="text-[13px] font-semibold text-[#31516a] transition-colors hover:text-[#1688c6]" data-testid={`link-nav-${label.toLowerCase().replaceAll(' ', '-')}`}>{label}</Link>)}</nav>
-      <div className="flex items-center gap-2"><Link href="/shop" aria-label="Search the shop" className="rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" data-testid="button-search"><Search size={19} /></Link><Link href="/cart" className="relative rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" aria-label="Open cart" data-testid="link-cart"><ShoppingBag size={19} />{count > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#efb34f] px-1 text-[10px] font-bold text-[#153a67]" data-testid="text-cart-count">{count}</span>}</Link><button className="rounded-full p-2.5 text-[#31516a] md:hidden" onClick={() => setOpen(!open)} aria-label="Toggle menu" data-testid="button-mobile-menu">{open ? <X size={20} /> : <Menu size={20} />}</button></div>
+      <div className="flex items-center gap-2"><Link href="/shop" aria-label="Search the shop" className="rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" data-testid="button-search"><Search size={19} /></Link><Link href="/account" aria-label="Your account" className="rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" data-testid="link-account"><User size={19} /></Link><Link href="/cart" className="relative rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" aria-label="Open cart" data-testid="link-cart"><ShoppingBag size={19} />{count > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#efb34f] px-1 text-[10px] font-bold text-[#153a67]" data-testid="text-cart-count">{count}</span>}</Link><button className="rounded-full p-2.5 text-[#31516a] md:hidden" onClick={() => setOpen(!open)} aria-label="Toggle menu" data-testid="button-mobile-menu">{open ? <X size={20} /> : <Menu size={20} />}</button></div>
     </div>
     {open && <nav className="border-t border-[#cfe5ea] bg-[#f7fcfc] px-5 py-4 md:hidden">{links.map(([label, href]) => <Link key={href} onClick={() => setOpen(false)} href={href} className="block border-b border-[#e0edef] py-3 text-sm font-semibold text-[#31516a]" data-testid={`link-mobile-${label.toLowerCase().replaceAll(' ', '-')}`}>{label}</Link>)}</nav>}
   </header>;
@@ -149,8 +198,13 @@ function Shop() {
   const visibleProducts = products.filter((product) => product.available !== false);
   const categoryOptions = useMemo(() => ['All', ...categoryOrder.filter((item) => visibleProducts.some((product) => product.category === item))], [visibleProducts]);
   const filtered = useMemo(() => visibleProducts.filter((p) => (category === 'All' || p.category === category) && p.name.toLowerCase().includes(query.toLowerCase())).sort((a, b) => {
-    const categoryDifference = categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category);
-    if (categoryDifference) return categoryDifference;
+    if (sort === 'featured') {
+      const aIndex = getSortIndex(a.id);
+      const bIndex = getSortIndex(b.id);
+      if (aIndex !== bIndex) return aIndex - bIndex;
+      const categoryDifference = categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category);
+      if (categoryDifference) return categoryDifference;
+    }
     if (sort === 'low') return a.price - b.price;
     if (sort === 'high') return b.price - a.price;
     return a.name.localeCompare(b.name);
@@ -194,23 +248,55 @@ function Cart() {
 }
 
 function About() {
-  useEffect(() => {
-    const storyParagraph = [...document.querySelectorAll('main p')].find((paragraph) => paragraph.textContent?.includes('Mrudुगंध'));
-    if (storyParagraph?.textContent) {
-      storyParagraph.textContent = storyParagraph.textContent.replace('Mrudुगंध', 'मृदुगंध');
-    }
-  }, []);
-  return <Shell><section className="bg-[#e3f3f7]"><div className="mx-auto max-w-5xl px-5 py-20 text-center lg:py-28"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">The heart of the shop · दुकानाचे हृदय</p><h1 className="mx-auto mt-5 max-w-3xl font-display text-5xl leading-tight text-[#173b61] sm:text-7xl">More Than a Product — <em className="font-normal text-[#1688c6]">A Connection.</em></h1><p className="mt-5 text-2xl text-[#31516a]">उत्पादनापेक्षा अधिक — एक नाते.</p><p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-[#547080]">Handmade with Purpose. Connected with Heart.<br />उद्देशपूर्ण हस्तकला. मनापासून जोडलेले.</p></div></section><section className="mx-auto grid max-w-6xl gap-12 px-5 py-20 lg:grid-cols-2 lg:items-center lg:py-28"><div className="rounded-[2rem] bg-[#f9f1df] p-10 lg:p-16"><HeartHandshake className="mb-12 text-[#c1792c]" size={38} /><p className="font-display text-4xl leading-tight text-[#173b61]">A product carries more when you know where it begins.</p><p className="mt-4 text-xl leading-8 text-[#547080]">उत्पादनाची सुरुवात जिथून होते, तिथली कथा जाणून घेतल्यावर त्याचे महत्त्व अधिक वाढते.</p></div><div><p className="text-lg leading-8 text-[#547080]">Mrudugandh Social Connect is a space for handcrafted products and the stories held in them. We celebrate traditional skills, careful making and the simple joy of bringing something meaningful into your everyday.</p><p className="mt-4 text-lg leading-8 text-[#547080]">Mrudुगंध सोशल कनेक्ट हे हस्तनिर्मित वस्तू आणि त्यांच्यात जपलेल्या कथांसाठीचे एक व्यासपीठ आहे. पारंपरिक कौशल्ये, जपून केलेली निर्मिती आणि दैनंदिन जीवनात अर्थपूर्ण वस्तू आणण्याचा साधा आनंद आम्ही साजरा करतो.</p><p className="mt-6 text-lg leading-8 text-[#547080]">Every piece in this collection is a reminder that objects can connect us—to craft, to community and to choices that feel a little more considered.</p><p className="mt-4 text-lg leading-8 text-[#547080]">या संग्रहातील प्रत्येक वस्तू आपल्याला कारागिरीशी, समुदायाशी आणि विचारपूर्वक केलेल्या निवडींशी जोडणारी आठवण आहे.</p></div></section><section className="bg-[#173b61] text-white"><div className="mx-auto max-w-6xl px-5 py-20 text-center lg:py-24"><p className="mx-auto max-w-2xl font-display text-4xl leading-tight sm:text-5xl">Choose the things that make room for a story.</p><p className="mx-auto mt-4 max-w-2xl text-xl text-[#d6e6eb]">कथेकरिता जागा निर्माण करणाऱ्या वस्तू निवडा.</p><div className="mt-8 flex flex-wrap justify-center gap-3"><Link href="/shop" className="inline-flex items-center gap-2 rounded-full bg-[#efb34f] px-6 py-3.5 text-sm font-bold text-[#173b61]" data-testid="link-about-shop">Explore the collection <ArrowRight size={16} /></Link><a href="https://docs.google.com/forms/d/1pYcyZPJkmnSDP6P7OljPg9-xHsjc26XTORoi2aUPX3Y/edit?usp=drivesdk" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-[#8eb7c5] px-6 py-3.5 text-sm font-bold text-white hover:bg-white/10" data-testid="link-volunteer-registration">Volunteer Registration Link <ArrowRight size={16} /></a></div></div></section></Shell>;
+  return <Shell><section className="bg-[#e3f3f7]"><div className="mx-auto max-w-5xl px-5 py-20 text-center lg:py-28"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">The heart of the shop · दुकानाचे हृदय</p><h1 className="mx-auto mt-5 max-w-3xl font-display text-5xl leading-tight text-[#173b61] sm:text-7xl">More Than a Product — <em className="font-normal text-[#1688c6]">A Connection.</em></h1><p className="mt-5 text-2xl text-[#31516a]">उत्पादनापेक्षा अधिक — एक नाते.</p><p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-[#547080]">Handmade with Purpose. Connected with Heart.<br />उद्देशपूर्ण हस्तकला. मनापासून जोडलेले.</p></div></section><section className="mx-auto grid max-w-6xl gap-12 px-5 py-20 lg:grid-cols-2 lg:items-center lg:py-28"><div className="rounded-[2rem] bg-[#f9f1df] p-10 lg:p-16"><HeartHandshake className="mb-12 text-[#c1792c]" size={38} /><p className="font-display text-4xl leading-tight text-[#173b61]">A product carries more when you know where it begins.</p><p className="mt-4 text-xl leading-8 text-[#547080]">उत्पादनाची सुरुवात जिथून होते, तिथली कथा जाणून घेतल्यावर त्याचे महत्त्व अधिक वाढते.</p></div><div><p className="text-lg leading-8 text-[#547080]">Mrudugandh Social Connect is a social enterprise initiative dedicated to creating sustainable market access for grassroots producers, women entrepreneurs, artisans, underprivileged individuals and community-based organisations. We work as a bridge between those who create and those who consume—bringing authentic handmade products and community-led enterprises into urban markets through exhibitions, stalls, promotional campaigns and direct customer outreach.</p><p className="mt-6 text-lg leading-8 text-[#547080]">मृदुगंध सोशल कनेक्ट हा एक सामाजिक उपक्रम आहे जो तळागाळातील उत्पादक, महिला उद्योजक, कारागीर, वंचित व्यक्ती आणि समुदाय-आधारित संस्थांसाठी शाश्वत बाजारपेठ निर्माण करण्यासाठी समर्पित आहे. आम्ही निर्माणकर्ते आणि ग्राहक यांच्यात एक दुवा म्हणून काम करतो—प्रदर्शने, स्टॉल्स, प्रचारात्मक मोहिमा आणि थेट ग्राहकांशी संपर्क साधून अस्सल हस्तनिर्मित उत्पादने आणि समुदाय-नेतृत्वाखालील उपक्रम शहरी बाजारपेठेत आणतो.</p></div></section><section className="bg-[#173b61] text-white"><div className="mx-auto max-w-6xl px-5 py-20 text-center lg:py-24"><p className="mx-auto max-w-2xl font-display text-4xl leading-tight sm:text-5xl">Choose the things that make room for a story.</p><p className="mx-auto mt-4 max-w-2xl text-xl text-[#d6e6eb]">कथेकरिता जागा निर्माण करणाऱ्या वस्तू निवडा.</p><div className="mt-8 flex flex-wrap justify-center gap-3"><Link href="/shop" className="inline-flex items-center gap-2 rounded-full bg-[#efb34f] px-6 py-3.5 text-sm font-bold text-[#173b61]" data-testid="link-about-shop">Explore the collection <ArrowRight size={16} /></Link><a href="https://docs.google.com/forms/d/1pYcyZPJkmnSDP6P7OljPg9-xHsjc26XTORoi2aUPX3Y/edit?usp=drivesdk" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-[#8eb7c5] px-6 py-3.5 text-sm font-bold text-white hover:bg-white/10" data-testid="link-volunteer-registration">Volunteer Registration Link <ArrowRight size={16} /></a></div></div></section></Shell>;
 }
 
 function Impact() {
   const items = [{ icon: Users, title: 'Supporting artisans', copy: 'Choosing handmade helps create space for the people and skills behind each product.' }, { icon: Sparkles, title: 'Preserving craftsmanship', copy: 'Traditional skills stay visible and relevant when we bring them into everyday life.' }, { icon: Leaf, title: 'Sustainable choices', copy: 'Thoughtful, lasting objects invite us to buy with care and keep with intention.' }, { icon: HeartHandshake, title: 'Community connection', copy: 'A meaningful purchase can become a small bridge between people, place and purpose.' }];
-  return <Shell><div className="mx-auto max-w-7xl px-5 pb-24 pt-14 lg:px-8"><div className="max-w-3xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Why it matters</p><h1 className="mt-4 font-display text-5xl leading-tight text-[#173b61] sm:text-7xl">The impact is in the connection.</h1><p className="mt-6 max-w-2xl text-lg leading-8 text-[#547080]">When you choose a handmade product, you make a thoughtful choice about what—and who—you want to keep close.</p></div><div className="mt-16 grid gap-4 sm:grid-cols-2">{items.map(({ icon: Icon, title, copy }, index) => <div key={title} className={`rounded-2xl p-7 ${index % 2 ? 'bg-[#f9f1df]' : 'bg-[#e3f3f7]'}`}><div className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#1688c6]"><Icon size={21} /></div><h2 className="mt-10 font-display text-2xl text-[#173b61]">{title}</h2><p className="mt-3 max-w-sm leading-7 text-[#547080]">{copy}</p></div>)}</div><div className="mt-20 grid gap-10 rounded-3xl bg-[#173b61] p-8 text-white lg:grid-cols-[1fr_auto] lg:items-center lg:p-14"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">A simple invitation</p><h2 className="mt-4 max-w-xl font-display text-4xl leading-tight">Bring Home Something Meaningful.</h2><p className="mt-4 max-w-lg leading-7 text-[#c8dce4]">Explore pieces that make everyday spaces feel more personal—and keep the connection moving.</p></div><Link href="/shop" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#efb34f] px-6 py-3.5 text-sm font-bold text-[#173b61]" data-testid="link-impact-shop">Shop with purpose <ArrowRight size={16} /></Link></div></div></Shell>;
+  const gallery = [galleryImg0, galleryImg1, galleryImg2, galleryImg3, galleryImg4, galleryImg5, galleryImg6];
+
+  return <Shell><div className="mx-auto max-w-7xl px-5 pb-24 pt-14 lg:px-8"><div className="max-w-4xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Why it matters</p><h1 className="mt-4 font-display text-5xl leading-tight text-[#173b61] sm:text-7xl">The impact is in the connection.</h1><p className="mt-6 max-w-4xl text-lg leading-8 text-[#547080]">Mrudugandh has developed a growing ecosystem of organisations and individual beneficiaries whose products and skills we support through market access and promotion. We source and promote bamboo products from Sampurna Bamboo Kendra, Melghat, which are made by tribals, supporting community-based livelihoods. We collaborate with Corvee Foundation and ICS Foundation, Pune, promoting products created by their community beneficiaries, including those from denotified tribal communities.</p></div>
+
+  <div className="mt-16 grid gap-4 sm:grid-cols-2">{items.map(({ icon: Icon, title, copy }, index) => <div key={title} className={`rounded-2xl p-7 ${index % 2 ? 'bg-[#f9f1df]' : 'bg-[#e3f3f7]'}`}><div className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#1688c6]"><Icon size={21} /></div><h2 className="mt-10 font-display text-2xl text-[#173b61]">{title}</h2><p className="mt-3 max-w-sm leading-7 text-[#547080]">{copy}</p></div>)}</div>
+
+  <div className="mt-20">
+    <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6] mb-6">Moments of impact</p>
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      {gallery.map((img, i) => (
+        <div key={i} className={`overflow-hidden rounded-2xl ${i === 0 ? 'col-span-2 row-span-2' : ''} ${i === 3 ? 'sm:col-span-2' : ''}`}>
+          <img src={img} alt="Impact moment" className="w-full h-full object-cover aspect-square transition-transform duration-700 hover:scale-105" />
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div className="mt-20 grid gap-10 rounded-3xl bg-[#173b61] p-8 text-white lg:grid-cols-[1fr_auto] lg:items-center lg:p-14"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">A simple invitation</p><h2 className="mt-4 max-w-xl font-display text-4xl leading-tight">Bring Home Something Meaningful.</h2><p className="mt-4 max-w-lg leading-7 text-[#c8dce4]">Explore pieces that make everyday spaces feel more personal—and keep the connection moving.</p></div><Link href="/shop" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#efb34f] px-6 py-3.5 text-sm font-bold text-[#173b61]" data-testid="link-impact-shop">Shop with purpose <ArrowRight size={16} /></Link></div></div></Shell>;
 }
 
 function Contact() {
   const [sent, setSent] = useState(false);
-  return <Shell><div className="mx-auto max-w-6xl px-5 pb-24 pt-14 lg:px-8"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Stay connected</p><h1 className="mt-4 font-display text-5xl text-[#173b61] sm:text-6xl">We would love to hear from you.</h1><p className="mt-5 leading-7 text-[#547080]">Have a question about a product or your order? Send us a note.</p></div><div className="mt-14 grid gap-10 lg:grid-cols-[.7fr_1.3fr]"><div className="rounded-2xl bg-[#e3f3f7] p-7"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Contact details</p><div className="mt-8 space-y-6 text-sm text-[#547080]"><div><p className="font-bold text-[#173b61]">Phone</p><p className="mt-1">+91 86683 31267 / +91 88309 65756</p></div><div><p className="font-bold text-[#173b61]">Email</p><p className="mt-1">mrudugandh.lIp@gmail.com</p></div><div><p className="font-bold text-[#173b61]">Address</p><p className="mt-1">C/o - 35, Phatak Baug, Navi Peth, Sadashiv Peth, Pune, Maharashtra 411030</p></div></div></div><form onSubmit={(e) => { e.preventDefault(); setSent(true); }} className="rounded-2xl border border-[#cfe5ea] bg-white p-6 shadow-[0_5px_20px_rgba(17,55,91,.04)] sm:p-8">{sent ? <div className="flex min-h-[280px] flex-col items-center justify-center text-center"><CircleCheck className="text-[#1688c6]" size={42} /><h2 className="mt-5 font-display text-3xl text-[#173b61]">Enquiry received.</h2><p className="mt-2 text-[#6a8390]">Thank you for your enquiry. We will get back to you soon.</p><button onClick={() => setSent(false)} type="button" className="mt-6 text-sm font-bold text-[#1688c6]" data-testid="button-send-another">Send another enquiry</button></div> : <><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Enquiry Section</p><h2 className="mt-2 font-display text-2xl text-[#173b61]">Write to us</h2><div className="mt-6 grid gap-5 sm:grid-cols-2"><Field label="Your name" name="contact-name" required /><Field label="Email address" name="contact-email" type="email" required /></div><label className="mt-5 block text-sm font-semibold text-[#31516a]">Message<textarea required rows={5} className="mt-2 w-full rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] p-3 text-sm outline-none focus:border-[#1688c6]" data-testid="input-contact-message" /></label><button type="submit" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#1688c6] px-6 py-3.5 text-sm font-bold text-white" data-testid="button-submit-contact">Send enquiry <ArrowRight size={16} /></button></>}</form></div></div></Shell>;
+  const [photo, setPhoto] = useState<File | null>(null);
+
+  return <Shell><div className="mx-auto max-w-6xl px-5 pb-24 pt-14 lg:px-8"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Stay connected</p><h1 className="mt-4 font-display text-5xl text-[#173b61] sm:text-6xl">We would love to hear from you.</h1><p className="mt-5 leading-7 text-[#547080]">Have a question about a product or your order? Send us a note, or leave a review.</p></div><div className="mt-14 grid gap-10 lg:grid-cols-[.7fr_1.3fr]"><div className="rounded-2xl bg-[#e3f3f7] p-7"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Contact details</p><div className="mt-8 space-y-6 text-sm text-[#547080]"><div><p className="font-bold text-[#173b61]">Phone</p><p className="mt-1">+91 86683 31267 / +91 88309 65756</p></div><div><p className="font-bold text-[#173b61]">Email</p><p className="mt-1">mrudugandh.lIp@gmail.com</p></div><div><p className="font-bold text-[#173b61]">Address</p><p className="mt-1">C/o - 35, Phatak Baug, Navi Peth, Sadashiv Peth, Pune, Maharashtra 411030</p></div></div></div><form onSubmit={(e) => { e.preventDefault(); setSent(true); }} className="rounded-2xl border border-[#cfe5ea] bg-white p-6 shadow-[0_5px_20px_rgba(17,55,91,.04)] sm:p-8">{sent ? <div className="flex min-h-[280px] flex-col items-center justify-center text-center"><Sparkles className="text-[#1688c6]" size={42} /><h2 className="mt-5 font-display text-3xl text-[#173b61]">Review received!</h2><p className="mt-2 text-[#6a8390]">Thank you for sharing your experience with us. It means the world to our artisans.</p><button onClick={() => { setSent(false); setPhoto(null); }} type="button" className="mt-6 text-sm font-bold text-[#1688c6]" data-testid="button-send-another">Submit another review</button></div> : <><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Share your experience</p><h2 className="mt-2 font-display text-2xl text-[#173b61]">Give us a review about your product!</h2><div className="mt-6 grid gap-5 sm:grid-cols-2"><Field label="Your name" name="contact-name" required /><Field label="Email address" name="contact-email" type="email" required /></div>
+
+  <div className="mt-5">
+    <label className="block text-sm font-semibold text-[#31516a]">Purchase Photo (optional)</label>
+    <div className="mt-2 flex items-center gap-4">
+      <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] px-4 py-3 text-sm text-[#547080] hover:border-[#1688c6] transition-colors">
+        <Package size={16} /> Choose Image
+        <input type="file" accept="image/*" className="hidden" onChange={(e) => setPhoto(e.target.files?.[0] || null)} />
+      </label>
+      {photo && <div className="flex items-center gap-3 overflow-hidden rounded-lg border border-[#cfe5ea] pr-3 bg-white">
+        <div className="h-12 w-12 shrink-0 bg-[#e3f3f7]">
+          <img src={URL.createObjectURL(photo)} alt="Preview" className="h-full w-full object-cover" />
+        </div>
+        <span className="truncate text-xs font-semibold text-[#31516a] max-w-[120px]">{photo.name}</span>
+        <button type="button" onClick={() => setPhoto(null)} className="text-[#a84e47] hover:text-[#7d3a35]"><X size={14} /></button>
+      </div>}
+    </div>
+  </div>
+
+  <label className="mt-5 block text-sm font-semibold text-[#31516a]">Your Review<textarea required rows={4} className="mt-2 w-full rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] p-3 text-sm outline-none focus:border-[#1688c6]" data-testid="input-contact-message" placeholder="What do you think about the product?" /></label><button type="submit" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#1688c6] px-6 py-3.5 text-sm font-bold text-white" data-testid="button-submit-contact">Submit Review <ArrowRight size={16} /></button></>}</form></div></div></Shell>;
 }
 
 function Field({ label, name, type = 'text', required = false, value, onChange }: { label: string; name: string; type?: string; required?: boolean; value?: string; onChange?: (e: ChangeEvent<HTMLInputElement>) => void }) {
@@ -251,10 +337,58 @@ function SignUpPage() {
   return <div className="flex min-h-screen items-center justify-center bg-[#e3f3f7] px-5 py-12"><SignUp routing="path" path={path} signInUrl={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/sign-in`} appearance={{ theme: shadcn }} /></div>;
 }
 
+function Account() {
+  const { user } = useUser();
+  const [order] = useState(() => { try { return JSON.parse(localStorage.getItem('mrudugandh-order') || 'null'); } catch { return null; } });
+
+  return <Shell><div className="mx-auto max-w-4xl px-5 pb-24 pt-14 lg:px-8">
+    <div className="mb-10"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Your Account</p><h1 className="mt-3 font-display text-5xl text-[#173b61]">My Profile</h1></div>
+    <Show when="signed-in">
+      <div className="mb-12 rounded-3xl bg-[#e3f3f7] p-8">
+        <div className="flex items-center gap-6">
+          <UserButton appearance={{ elements: { userButtonAvatarBox: "h-16 w-16" } }} />
+          <div>
+            <h2 className="font-display text-2xl text-[#173b61]">{user?.firstName} {user?.lastName}</h2>
+            <p className="mt-1 text-sm text-[#547080]">{user?.primaryEmailAddress?.emailAddress}</p>
+          </div>
+        </div>
+      </div>
+
+      <h2 className="mb-6 font-display text-3xl text-[#173b61]">Order History</h2>
+      {order ? <div className="rounded-2xl border border-[#cfe5ea] bg-white p-6 sm:p-8">
+        <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#cfe5ea] pb-6">
+          <div><p className="text-sm font-bold text-[#1688c6]">Order #{order.number}</p><p className="mt-1 text-xs text-[#6a8390]">Placed recently</p></div>
+          <p className="font-display text-xl text-[#173b61]">{money(order.total)}</p>
+        </div>
+        <div className="mt-6 space-y-4">
+          {order.items?.map((item: any, i: number) => (
+            <div key={i} className="flex justify-between text-sm">
+              <span className="text-[#547080]">Product ID: {item.productId} × {item.quantity}</span>
+            </div>
+          ))}
+        </div>
+      </div> : <div className="rounded-2xl border border-dashed border-[#9ecbd5] bg-[#edf8f9] py-16 text-center">
+        <ShoppingBag className="mx-auto text-[#1688c6]" size={28} />
+        <h3 className="mt-4 font-display text-xl text-[#173b61]">No orders yet</h3>
+        <p className="mt-2 text-sm text-[#6b8490]">When you place an order, it will appear here.</p>
+        <Link href="/shop" className="mt-5 inline-block text-sm font-bold text-[#1688c6]">Explore the shop</Link>
+      </div>}
+    </Show>
+    <Show when="signed-out">
+      <div className="rounded-2xl bg-[#e3f3f7] p-10 text-center">
+        <User className="mx-auto text-[#1688c6]" size={32} />
+        <h2 className="mt-5 font-display text-3xl text-[#173b61]">Sign in to your account</h2>
+        <p className="mt-3 text-[#547080]">Manage your orders and stay connected.</p>
+        <Link href="/sign-in" className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#1688c6] px-6 py-3.5 text-sm font-bold text-white">Sign in <ArrowRight size={16} /></Link>
+      </div>
+    </Show>
+  </div></Shell>;
+}
+
 function Router() {
   const [location] = useLocation();
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); document.title = location === '/' ? 'Mrudugandh Social Connect' : `Mrudugandh · ${location.slice(1).split('/')[0]}`; }, [location]);
-  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route path="/shop" component={Shop} /><Route path="/product/:id" component={ProductDetail} /><Route path="/about" component={About} /><Route path="/impact" component={Impact} /><Route path="/contact" component={Contact} /><Route path="/cart" component={Cart} /><Route path="/checkout" component={Checkout} /><Route path="/order-confirmation" component={Confirmation} /><Route path="/admin" component={Admin} /><Route path="/sign-in" component={SignInPage} /><Route path="/sign-in/:rest*" component={SignInPage} /><Route path="/sign-up" component={SignUpPage} /><Route path="/sign-up/:rest*" component={SignUpPage} /><Route component={NotFound} /></Switch></ErrorBoundary>;
+  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route path="/shop" component={Shop} /><Route path="/product/:id" component={ProductDetail} /><Route path="/about" component={About} /><Route path="/impact" component={Impact} /><Route path="/contact" component={Contact} /><Route path="/cart" component={Cart} /><Route path="/checkout" component={Checkout} /><Route path="/order-confirmation" component={Confirmation} /><Route path="/account" component={Account} /><Route path="/admin" component={Admin} /><Route path="/sign-in" component={SignInPage} /><Route path="/sign-in/:rest*" component={SignInPage} /><Route path="/sign-up" component={SignUpPage} /><Route path="/sign-up/:rest*" component={SignUpPage} /><Route component={NotFound} /></Switch></ErrorBoundary>;
 }
 
 const queryClient = new QueryClient();
