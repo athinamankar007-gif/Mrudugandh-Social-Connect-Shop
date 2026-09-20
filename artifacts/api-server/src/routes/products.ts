@@ -32,13 +32,13 @@ const seedProducts = [
   { id: "dupatta", name: "Kantha Work Dupatta", category: "Stoles and Dupattas", price: 1200, description: "Kantha Work Dupatta", variants: [], inventory: 0, available: true },
   { id: "shawl", name: "Kantha Patchwork Stole", category: "Stoles and Dupattas", price: 750, description: "Kantha Patchwork Stole", variants: [], inventory: 0, available: true },
   { id: "kantha-plain-stole", name: "Kantha Plain Stole", category: "Stoles and Dupattas", price: 700, description: "Kantha Plain Stole", variants: [], inventory: 0, available: true },
-  { id: "bedsheet", name: "Single Bedsheet", category: "Bedsheets", price: 600, description: "Single bedsheet (5/7)", variants: [{ label: "One Piece", price: 600 }, { label: "Two Pieces", price: 1000 }], inventory: 0, available: true },
+  { id: "bedsheet", name: "Single Bedsheet", category: "Bedsheets", price: 600, description: "Single bedsheet (5/7)", variants: [{ label: "One Piece", price: 600, inventory: 0, imagePaths: [] }, { label: "Two Pieces", price: 1000, inventory: 0, imagePaths: [] }], inventory: 0, available: true },
   { id: "king-size-bedsheet", name: "King Size Bedsheet", category: "Bedsheets", price: 1300, description: "King size bedsheet (7.5/9)", variants: [], inventory: 0, available: true },
   { id: "superking-size-bedsheet", name: "Superking Size Bedsheet", category: "Bedsheets", price: 1800, description: "Superking size bedsheet (9/9)", variants: [], inventory: 0, available: true },
   { id: "dohars-combo-set", name: "Dohars Combo Set", category: "Dohars", price: 3500, description: "One bedsheet, two pillow covers and one dohar", variants: [], inventory: 0, available: true },
-  { id: "kids-dohar", name: "Kids Dohar", category: "Dohars", price: 850, description: "Kids Dohar", variants: [{ label: "Junior Champ (3/5)", price: 850 }, { label: "Senior Champ (5/7)", price: 1200 }], inventory: 0, available: true },
-  { id: "adults-patchwork-dohar", name: "Patchwork Dohar", category: "Dohars", price: 1800, description: "Patchwork Dohar", variants: [{ label: "Single (5.5 - 7.5)", price: 1800 }, { label: "Double (7.5 - 9)", price: 2500 }], inventory: 0, available: true },
-  { id: "adult-plain-dohar", name: "Plain Dohar", category: "Dohars", price: 1200, description: "Plain Dohar", variants: [{ label: "Single (5/7)", price: 1200 }, { label: "Double (7.5/8.5)", price: 2000 }], inventory: 0, available: true },
+  { id: "kids-dohar", name: "Kids Dohar", category: "Dohars", price: 850, description: "Kids Dohar", variants: [{ label: "Junior Champ (3/5)", price: 850, inventory: 0, imagePaths: [] }, { label: "Senior Champ (5/7)", price: 1200, inventory: 0, imagePaths: [] }], inventory: 0, available: true },
+  { id: "adults-patchwork-dohar", name: "Patchwork Dohar", category: "Dohars", price: 1800, description: "Patchwork Dohar", variants: [{ label: "Single (5.5 - 7.5)", price: 1800, inventory: 0, imagePaths: [] }, { label: "Double (7.5 - 9)", price: 2500, inventory: 0, imagePaths: [] }], inventory: 0, available: true },
+  { id: "adult-plain-dohar", name: "Plain Dohar", category: "Dohars", price: 1200, description: "Plain Dohar", variants: [{ label: "Single (5/7)", price: 1200, inventory: 0, imagePaths: [] }, { label: "Double (7.5/8.5)", price: 2000, inventory: 0, imagePaths: [] }], inventory: 0, available: true },
 ].map((product) => ({ ...product, imagePath: null, imagePaths: [] }));
 
 let seedPromise: Promise<void> | null = null;
@@ -106,7 +106,7 @@ router.post("/products", requireAdmin, async (req, res): Promise<void> => {
     price: parsed.data.price,
     imagePath: parsed.data.imagePaths?.[0] ?? parsed.data.imagePath ?? null,
     imagePaths: parsed.data.imagePaths ?? (parsed.data.imagePath ? [parsed.data.imagePath] : []),
-    variants: parsed.data.variants ?? [],
+    variants: parsed.data.variants?.map(v => ({ ...v, inventory: v.inventory ?? 0, imagePaths: v.imagePaths ?? [] })) ?? [],
     inventory: parsed.data.inventory ?? 0,
     available: parsed.data.available ?? true,
   };
@@ -133,9 +133,16 @@ router.patch("/products/:id", requireAdmin, async (req, res): Promise<void> => {
     return;
   }
 
-  const updateData = { ...parsed.data, updatedAt: new Date() };
+  const updateData: Record<string, any> = { ...parsed.data, updatedAt: new Date() };
   if (parsed.data.imagePaths !== undefined) {
     updateData.imagePath = parsed.data.imagePaths[0] ?? null;
+  }
+  if (parsed.data.variants !== undefined) {
+    updateData.variants = parsed.data.variants.map(v => ({
+      ...v,
+      inventory: v.inventory ?? 0,
+      imagePaths: v.imagePaths ?? [],
+    }));
   }
 
   const [product] = await db

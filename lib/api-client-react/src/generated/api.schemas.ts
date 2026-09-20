@@ -14,6 +14,9 @@ export interface ProductVariant {
   label: string;
   /** @minimum 0 */
   price: number;
+  /** @minimum 0 */
+  inventory?: number;
+  imagePaths?: string[];
 }
 
 export interface Product {

@@ -116,6 +116,28 @@ export default function AdminPanel() {
     event.target.value = "";
   };
 
+  const handleVariantImage = async (event: ChangeEvent<HTMLInputElement>, variantIndex: number) => {
+    const files = Array.from(event.target.files ?? []);
+    if (!files.length) return;
+    const uploadedPaths: string[] = [];
+    for (const file of files) {
+      const response = await uploadFile(file);
+      if (response) uploadedPaths.push(response.objectPath);
+    }
+    if (uploadedPaths.length) {
+      setDraft((current) => {
+        const variants = [...current.variants];
+        variants[variantIndex] = {
+          ...variants[variantIndex],
+          imagePaths: [...(variants[variantIndex].imagePaths || []), ...uploadedPaths],
+        };
+        return { ...current, variants };
+      });
+      setNotice(`${uploadedPaths.length} variant image${uploadedPaths.length === 1 ? "" : "s"} uploaded. Save the product to publish them.`);
+    }
+    event.target.value = "";
+  };
+
   const saveProduct = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setFormError("");
@@ -243,8 +265,49 @@ export default function AdminPanel() {
           </div>
 
           <div className="mt-6">
-            <div className="flex items-center justify-between"><p className="text-sm font-bold text-[#31516a]">Variants</p><button type="button" onClick={() => setDraft({ ...draft, variants: [...draft.variants, { label: "", price: Number(draft.price) || 0 }] })} className="inline-flex items-center gap-1 text-xs font-bold text-[#1688c6]"><Plus size={14} /> Add variant</button></div>
-            <div className="mt-3 space-y-2">{draft.variants.map((variant, index) => <div key={`${index}-${variant.label}`} className="flex gap-2"><input value={variant.label} placeholder="e.g. Single" onChange={(event) => setDraft({ ...draft, variants: draft.variants.map((item, itemIndex) => itemIndex === index ? { ...item, label: event.target.value } : item) })} className="min-w-0 flex-1 rounded-lg border border-[#cfe5ea] bg-white px-3 py-2 text-sm outline-none focus:border-[#1688c6]" /><input type="number" min="0" step="1" value={variant.price} onChange={(event) => setDraft({ ...draft, variants: draft.variants.map((item, itemIndex) => itemIndex === index ? { ...item, price: Number(event.target.value) } : item) })} className="w-28 rounded-lg border border-[#cfe5ea] bg-white px-3 py-2 text-sm outline-none focus:border-[#1688c6]" /><button type="button" onClick={() => setDraft({ ...draft, variants: draft.variants.filter((_, itemIndex) => itemIndex !== index) })} className="rounded-lg p-2 text-[#a84e47]" aria-label="Remove variant"><X size={16} /></button></div>)}</div>
+            <div className="flex items-center justify-between"><p className="text-sm font-bold text-[#31516a]">Variants</p><button type="button" onClick={() => setDraft({ ...draft, variants: [...draft.variants, { label: "", price: Number(draft.price) || 0, inventory: 0, imagePaths: [] }] })} className="inline-flex items-center gap-1 text-xs font-bold text-[#1688c6]"><Plus size={14} /> Add variant</button></div>
+            <div className="mt-3 space-y-4">{draft.variants.map((variant, index) => (
+              <div key={`${index}-${variant.label}`} className="rounded-xl border border-[#cfe5ea] bg-white p-4">
+                <div className="flex flex-wrap items-start gap-3">
+                  <label className="flex-1 min-w-[120px] text-xs font-semibold text-[#31516a]">Label
+                    <input value={variant.label} placeholder="e.g. Single" onChange={(event) => setDraft({ ...draft, variants: draft.variants.map((item, itemIndex) => itemIndex === index ? { ...item, label: event.target.value } : item) })} className="mt-1 w-full rounded-lg border border-[#cfe5ea] bg-white px-3 py-2 text-sm outline-none focus:border-[#1688c6]" />
+                  </label>
+                  <label className="w-28 text-xs font-semibold text-[#31516a]">Price (₹)
+                    <input type="number" min="0" step="1" value={variant.price} onChange={(event) => setDraft({ ...draft, variants: draft.variants.map((item, itemIndex) => itemIndex === index ? { ...item, price: Number(event.target.value) } : item) })} className="mt-1 w-full rounded-lg border border-[#cfe5ea] bg-white px-3 py-2 text-sm outline-none focus:border-[#1688c6]" />
+                  </label>
+                  <label className="w-28 text-xs font-semibold text-[#31516a]">Inventory
+                    <input type="number" min="0" step="1" value={variant.inventory ?? 0} onChange={(event) => setDraft({ ...draft, variants: draft.variants.map((item, itemIndex) => itemIndex === index ? { ...item, inventory: Number(event.target.value) } : item) })} className="mt-1 w-full rounded-lg border border-[#cfe5ea] bg-white px-3 py-2 text-sm outline-none focus:border-[#1688c6]" />
+                  </label>
+                  <button type="button" onClick={() => setDraft({ ...draft, variants: draft.variants.filter((_, itemIndex) => itemIndex !== index) })} className="mt-6 rounded-lg p-2 text-[#a84e47] hover:bg-[#fff5f3]" aria-label="Remove variant"><Trash2 size={16} /></button>
+                </div>
+                <div className="mt-4 border-t border-[#ebf4f5] pt-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-xs font-bold text-[#31516a]">Variant images</p>
+                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#f0f8f9] px-3 py-1.5 text-[11px] font-bold text-[#1688c6] hover:bg-[#e1f1f3]">
+                      <ImagePlus size={12} /> {isUploading ? `Uploading ${progress}%` : "Add variant image"}
+                      <input type="file" accept="image/*" multiple onChange={(e) => handleVariantImage(e, index)} disabled={isUploading} className="hidden" />
+                    </label>
+                  </div>
+                  {(variant.imagePaths || []).length > 0 && (
+                    <div className="mt-3 flex gap-2 overflow-x-auto pb-2">
+                      {(variant.imagePaths || []).map((path, pIndex) => (
+                        <div key={path} className="group relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">
+                          <img src={imageUrl(path) ?? ""} alt={`Variant image ${pIndex + 1}`} className="h-full w-full object-cover" />
+                          <button type="button" onClick={() => setDraft((current) => {
+                            const newVariants = [...current.variants];
+                            newVariants[index] = {
+                              ...newVariants[index],
+                              imagePaths: (newVariants[index].imagePaths || []).filter((_, i) => i !== pIndex)
+                            };
+                            return { ...current, variants: newVariants };
+                          })} className="absolute right-0.5 top-0.5 rounded-full bg-white/90 p-0.5 text-[#a84e47] opacity-0 shadow transition-opacity group-hover:opacity-100" aria-label="Remove variant image"><X size={12} /></button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}</div>
           </div>
 
           <label className="mt-6 flex items-center gap-3 text-sm font-semibold text-[#31516a]"><input type="checkbox" checked={draft.available} onChange={(event) => setDraft({ ...draft, available: event.target.checked })} className="h-4 w-4 accent-[#1688c6]" /> Show this product in the shop</label>

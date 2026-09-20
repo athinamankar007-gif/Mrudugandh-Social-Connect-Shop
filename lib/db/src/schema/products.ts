@@ -5,6 +5,8 @@ import { z } from "zod/v4";
 export const productVariantSchema = z.object({
   label: z.string().min(1),
   price: z.number().int().min(0),
+  inventory: z.number().int().min(0).default(0),
+  imagePaths: z.array(z.string()).default([]),
 });
 
 export type ProductVariant = z.infer<typeof productVariantSchema>;

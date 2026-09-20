@@ -283,6 +283,13 @@ components:
         price:
           type: integer
           minimum: 0
+        inventory:
+          type: integer
+          minimum: 0
+        imagePaths:
+          type: array
+          items:
+            type: string
       required: [label, price]
     Product:
       type: object

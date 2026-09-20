@@ -1,6 +1,6 @@
 import { createContext, type ChangeEvent, type FormEvent, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ClerkProvider, Show, SignIn, SignUp, useUser, UserButton } from '@clerk/react';
+import { ClerkProvider, Show, SignIn, SignUp, useUser, UserButton, useClerk } from '@clerk/react';
 import { shadcn } from '@clerk/themes';
 import { useListProducts, type Product as ApiProduct } from '@workspace/api-client-react';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -32,18 +32,18 @@ import galleryImg4 from '../../../attached_assets/4_PHOTO-2026-09-19-15-10-34_17
 import galleryImg5 from '../../../attached_assets/5_PHOTO-2026-09-19-15-10-37_1789840839387.jpg';
 import galleryImg6 from '../../../attached_assets/6_PHOTO-2026-09-19-15-10-38_1789840839387.jpg';
 
-type Variant = { label: string; price: number };
+type Variant = { label: string; price: number; inventory?: number; imagePaths?: string[]; images?: string[] };
 type Product = { id: string; name: string; category: string; price: number; description: string; variants?: Variant[]; image: string | null; images: string[]; imagePath?: string | null; imagePaths?: string[]; inventory?: number; available?: boolean };
 type CartLine = { productId: string; quantity: number; variant?: Variant };
 
 const money = (value: number) => `₹${value.toLocaleString('en-IN')}`;
-const categoryOrder = ['Tote Bags', 'Bamboo Products', 'Stoles and Dupattas', 'Bedsheets', 'Dohars', 'Gullak (Piggybank)'];
+const categoryOrder = ['Bedsheets', 'Dohars', 'Stoles and Dupattas', 'Tote Bags', 'Bamboo Products', 'Gullak (Piggybank)'];
 
 const exactProductOrder = [
-  'canvas-tote-bag', 'kalamkari-tote-bag', 'patchwork-tote-bag',
-  'dupatta', 'shawl', 'kantha-plain-stole',
   'bedsheet', 'king-size-bedsheet', 'superking-size-bedsheet',
   'adult-plain-dohar', 'adults-patchwork-dohar', 'kids-dohar', 'dohars-combo-set',
+  'dupatta', 'shawl', 'kantha-plain-stole',
+  'canvas-tote-bag', 'kalamkari-tote-bag', 'patchwork-tote-bag',
   'bamboo-lights', 'bamboo-pen', 'bamboo-pen-stand', 'bamboo-toothbrush',
   'bamboo-tray', 'bamboo-comb', 'bamboo-three-in-one-stand', 'wooden-base-piggybank'
 ];
@@ -77,6 +77,10 @@ function mapApiProduct(product: ApiProduct): Product {
 
   return {
     ...product,
+    variants: product.variants?.map((v) => ({
+      ...v,
+      images: v.imagePaths?.map(publicImageUrl).filter((path): path is string => Boolean(path)) || [],
+    })),
     image: images[0] ?? null,
     images,
   };
@@ -136,9 +140,18 @@ function ProductImage({ product, large = false }: { product: Product; large?: bo
   return <div className={`product-placeholder paper-grain ${frameClass} flex flex-col items-center justify-center overflow-hidden bg-[#dff1f6] text-[#174471]`}><div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full border border-[#279ddd]/40 bg-[#edf9fb] text-[#1688c6]">{icon}</div><span className="relative z-10 mt-5 max-w-[70%] text-center font-display text-xl leading-tight">{product.name}</span><small className="relative z-10 mt-2 uppercase tracking-[.22em] text-[10px] text-[#3c6e87]">{product.category}</small></div>;
 }
 
-function ProductGallery({ product }: { product: Product }) {
-  const images = product.images.length ? product.images : product.image ? [product.image] : [];
+function ProductGallery({ product, variant }: { product: Product; variant?: Variant }) {
+  const productImages = product.images.length ? product.images : product.image ? [product.image] : [];
+  const variantImages = variant?.images?.length ? variant.images : [];
+  const images = variantImages.length > 0 ? variantImages : productImages;
+
   const [selectedImage, setSelectedImage] = useState(images[0] ?? null);
+
+  // Reset selected image when images array changes (e.g. variant change)
+  useEffect(() => {
+    setSelectedImage(images[0] ?? null);
+  }, [images[0], variant?.label]);
+
   const [failedImages, setFailedImages] = useState<string[]>([]);
   const usableImages = images.filter((image) => !failedImages.includes(image));
   const activeImage = usableImages.includes(selectedImage ?? "") ? selectedImage : usableImages[0] ?? null;
@@ -222,13 +235,21 @@ function ProductDetail() {
   const [, setLocation] = useLocation();
   const [variant, setVariant] = useState<Variant | undefined>(product?.variants?.[0]);
   const [quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    if (product) {
+      setVariant(product.variants?.[0]);
+      setQuantity(1);
+    }
+  }, [product?.id]);
+
   if (isLoading) return <Shell><CatalogMessage title="Loading product…" copy="Fetching the latest product details." /></Shell>;
   if (error) return <Shell><CatalogMessage title="Product details are temporarily unavailable" copy="Please refresh in a moment while we reconnect to the catalogue." /></Shell>;
   if (!product) return <Shell><Empty title="Product not found" copy="This product is not in the collection." href="/shop" action="Back to shop" /></Shell>;
   if (product.available === false) return <Shell><Empty title="Product unavailable" copy="This product is not currently available." href="/shop" action="Back to shop" /></Shell>;
   const price = variant?.price ?? product.price;
   const related = products.filter((item) => item.category === product.category && item.id !== product.id).slice(0, 3);
-  return <Shell><div className="mx-auto max-w-7xl px-5 pb-20 pt-10 lg:px-8"><Link href="/shop" className="mb-8 inline-flex items-center gap-1 text-sm font-semibold text-[#1688c6]" data-testid="link-back-shop"><ChevronLeft size={17} /> Back to shop</Link><div className="grid gap-12 lg:grid-cols-2 lg:gap-20"><div className="rounded-3xl bg-[#e3f3f7] p-4"><ProductGallery product={product} /></div><div className="self-center"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">{product.category}</p><h1 className="mt-3 font-display text-5xl leading-tight text-[#173b61]">{product.name}</h1><p className="mt-4 text-2xl font-semibold text-[#1688c6]" data-testid="text-product-price">{money(price)}</p><p className="mt-6 max-w-md leading-7 text-[#547080]">{product.description}</p>{product.variants?.length ? <div className="mt-8"><p className="mb-3 text-xs font-bold uppercase tracking-[.15em] text-[#547080]">Choose a size</p><div className="flex gap-3">{product.variants.map((item) => <button key={item.label} onClick={() => setVariant(item)} className={`rounded-xl border px-5 py-3 text-sm font-semibold ${variant?.label === item.label ? 'border-[#1688c6] bg-[#e3f3f7] text-[#1688c6]' : 'border-[#cfe5ea] bg-white text-[#547080]'}`} data-testid={`button-variant-${item.label.toLowerCase()}`}>{item.label} <span className="ml-2 text-xs">{money(item.price)}</span></button>)}</div></div> : null}<div className="mt-8 flex gap-3"><div className="flex items-center rounded-full border border-[#cfe5ea] bg-white"><button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-3 text-[#547080]" aria-label="Decrease quantity" data-testid="button-decrease-quantity"><Minus size={16} /></button><span className="w-8 text-center text-sm font-bold" data-testid="text-product-quantity">{quantity}</span><button onClick={() => setQuantity(quantity + 1)} className="p-3 text-[#547080]" aria-label="Increase quantity" data-testid="button-increase-quantity"><Plus size={16} /></button></div><button onClick={() => { add(product.id, quantity, variant); setLocation('/cart'); }} className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#1688c6] px-6 py-3 text-sm font-bold text-white hover:bg-[#1179ae]" data-testid="button-add-to-cart"><ShoppingBag size={17} /> Add to cart</button></div></div></div>{related.length > 0 && <section className="mt-24 border-t border-[#cfe5ea] pt-12"><h2 className="font-display text-3xl text-[#173b61]">More from {product.category}</h2><div className="mt-7 grid gap-5 sm:grid-cols-3">{related.map((item) => <ProductCard key={item.id} product={item} />)}</div></section>}</div></Shell>;
+  return <Shell><div className="mx-auto max-w-7xl px-5 pb-20 pt-10 lg:px-8"><Link href="/shop" className="mb-8 inline-flex items-center gap-1 text-sm font-semibold text-[#1688c6]" data-testid="link-back-shop"><ChevronLeft size={17} /> Back to shop</Link><div className="grid gap-12 lg:grid-cols-2 lg:gap-20"><div className="rounded-3xl bg-[#e3f3f7] p-4"><ProductGallery product={product} variant={variant} /></div><div className="self-center"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">{product.category}</p><h1 className="mt-3 font-display text-5xl leading-tight text-[#173b61]">{product.name}</h1><p className="mt-4 text-2xl font-semibold text-[#1688c6]" data-testid="text-product-price">{money(price)}</p><p className="mt-6 max-w-md leading-7 text-[#547080]">{product.description}</p>{product.variants?.length ? <div className="mt-8"><p className="mb-3 text-xs font-bold uppercase tracking-[.15em] text-[#547080]">Choose a size</p><div className="flex gap-3">{product.variants.map((item) => <button key={item.label} onClick={() => setVariant(item)} className={`rounded-xl border px-5 py-3 text-sm font-semibold ${variant?.label === item.label ? 'border-[#1688c6] bg-[#e3f3f7] text-[#1688c6]' : 'border-[#cfe5ea] bg-white text-[#547080]'}`} data-testid={`button-variant-${item.label.toLowerCase()}`}>{item.label} <span className="ml-2 text-xs">{money(item.price)}</span></button>)}</div></div> : null}<div className="mt-8 flex gap-3"><div className="flex items-center rounded-full border border-[#cfe5ea] bg-white"><button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-3 text-[#547080]" aria-label="Decrease quantity" data-testid="button-decrease-quantity"><Minus size={16} /></button><span className="w-8 text-center text-sm font-bold" data-testid="text-product-quantity">{quantity}</span><button onClick={() => setQuantity(quantity + 1)} className="p-3 text-[#547080]" aria-label="Increase quantity" data-testid="button-increase-quantity"><Plus size={16} /></button></div><button onClick={() => { add(product.id, quantity, variant); setLocation('/cart'); }} className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#1688c6] px-6 py-3 text-sm font-bold text-white hover:bg-[#1179ae]" data-testid="button-add-to-cart"><ShoppingBag size={17} /> Add to cart</button></div></div></div>{related.length > 0 && <section className="mt-24 border-t border-[#cfe5ea] pt-12"><h2 className="font-display text-3xl text-[#173b61]">More from {product.category}</h2><div className="mt-7 grid gap-5 sm:grid-cols-3">{related.map((item) => <ProductCard key={item.id} product={item} />)}</div></section>}</div></Shell>;
 }
 
 function Empty({ title, copy, href, action }: { title: string; copy: string; href: string; action: string }) {
@@ -309,9 +330,113 @@ function Checkout() {
   const [, setLocation] = useLocation();
   const shipping = subtotal >= 2999 ? 0 : 100;
   const [error, setError] = useState('');
-  if (!cart.length) return <Shell><Empty title="Nothing to check out" copy="Your cart is empty. Start with something meaningful." href="/shop" action="Go to shop" /></Shell>;
-  const submit = (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); const data = new FormData(e.currentTarget); const order = { number: `MRD-${Date.now().toString().slice(-7)}`, name: data.get('name') as string, total: subtotal + shipping, items: cart }; localStorage.setItem('mrudugandh-order', JSON.stringify(order)); clear(); setError(''); setLocation('/order-confirmation'); };
-  return <Shell><div className="mx-auto max-w-7xl px-5 pb-24 pt-14 lg:px-8"><div className="mb-10"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Almost there</p><h1 className="mt-3 font-display text-5xl text-[#173b61]">Checkout</h1></div><div className="grid gap-8 lg:grid-cols-[1fr_360px]"><form onSubmit={submit} className="rounded-2xl border border-[#cfe5ea] bg-white p-6 sm:p-8"><h2 className="font-display text-2xl text-[#173b61]">Delivery details</h2><p className="mt-2 text-sm text-[#6a8390]">This is a demo checkout for the college project.</p>{error && <p className="mt-4 rounded-lg bg-[#fae5e1] p-3 text-sm text-[#a84e47]" data-testid="status-checkout-error">{error}</p>}<div className="mt-7 grid gap-5 sm:grid-cols-2"><Field label="Full name" name="name" required /><Field label="Mobile" name="mobile" type="tel" required /><Field label="Email" name="email" type="email" required /><Field label="PIN code" name="pin" required /></div><label className="mt-5 block text-sm font-semibold text-[#31516a]">Address<textarea required name="address" rows={3} className="mt-2 w-full rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] p-3 text-sm font-normal outline-none focus:border-[#1688c6]" data-testid="input-address" /></label><div className="mt-5 grid gap-5 sm:grid-cols-2"><Field label="City" name="city" required /><Field label="State" name="state" required /></div><button type="submit" className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-[#1688c6] px-6 py-3.5 text-sm font-bold text-white" data-testid="button-place-order">Place order <ArrowRight size={16} /></button></form><aside className="h-fit rounded-2xl bg-[#f9f1df] p-6"><h2 className="font-display text-2xl text-[#173b61]">Order summary</h2><div className="mt-6 space-y-4">{cart.map((line) => { const p = products.find((item) => item.id === line.productId); if (!p) return null; return <div key={cartKey(line)} className="flex justify-between gap-3 text-sm"><span className="text-[#547080]">{p.name}{line.variant ? ` · ${line.variant.label}` : ''} × {line.quantity}</span><span className="font-semibold text-[#173b61]">{money((line.variant?.price ?? p.price) * line.quantity)}</span></div> })}</div><div className="mt-6 space-y-3 border-t border-[#ead7b6] pt-5 text-sm"><div className="flex justify-between text-[#547080]"><span>Subtotal</span><span data-testid="text-checkout-subtotal">{money(subtotal)}</span></div><div className="flex justify-between text-[#547080]"><span>Shipping</span><span>{shipping ? money(shipping) : 'Free'}</span></div><div className="flex justify-between pt-2 text-base font-bold text-[#173b61]"><span>Total</span><span data-testid="text-checkout-total">{money(subtotal + shipping)}</span></div></div></aside></div></div></Shell>;
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  if (!cart.length && !showSuccess) return <Shell><Empty title="Nothing to check out" copy="Your cart is empty. Start with something meaningful." href="/shop" action="Go to shop" /></Shell>;
+
+  const submit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    const name = data.get('name') as string;
+    const mobile = data.get('mobile') as string;
+    const pin = data.get('pin') as string;
+    const address = data.get('address') as string;
+
+    const itemsList = cart.map(line => {
+      const p = products.find(item => item.id === line.productId);
+      return `${p?.name || 'Item'}${line.variant ? ` (${line.variant.label})` : ''} x ${line.quantity}`;
+    }).join(', ');
+
+    const totalAmount = subtotal + shipping;
+    const text = `New Order Request from Website! Items: ${itemsList}. Total: ₹${totalAmount}. Address: ${name}, ${address}, PIN: ${pin}, Phone: ${mobile}.`;
+
+    const url = `https://wa.me/918668331267?text=${encodeURIComponent(text)}`;
+    const order = { number: `MRD-${Date.now().toString().slice(-7)}`, name, total: totalAmount, items: cart };
+
+    try {
+      const win = window.open(url, '_blank');
+      if (!win || win.closed || typeof win.closed === 'undefined') {
+        setError('Popup blocked. Please allow popups for this site to open WhatsApp.');
+        return;
+      }
+    } catch (err) {
+      setError('Could not open WhatsApp. Please try again or check your browser settings.');
+      return;
+    }
+
+    localStorage.setItem('mrudugandh-order', JSON.stringify(order));
+    clear();
+    setError('');
+    setShowSuccess(true);
+  };
+
+  return <Shell>
+    {showSuccess && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#153a67]/60 p-5 backdrop-blur-sm">
+        <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-2xl">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#e3f3f7] text-[#1688c6]">
+            <CircleCheck size={32} />
+          </div>
+          <h2 className="mt-5 font-display text-2xl text-[#173b61]">Request Sent</h2>
+          <p className="mt-3 text-[#547080] leading-6">Your order request has been sent! Our team will message you on WhatsApp shortly to confirm your order and share the payment QR code.</p>
+          <button
+            onClick={() => setLocation('/order-confirmation')}
+            className="mt-8 flex w-full justify-center rounded-full bg-[#1688c6] py-3.5 text-sm font-bold text-white transition-colors hover:bg-[#157bb3]"
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+    )}
+    <div className="mx-auto max-w-7xl px-5 pb-24 pt-14 lg:px-8">
+      <div className="mb-10">
+        <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Almost there</p>
+        <h1 className="mt-3 font-display text-5xl text-[#173b61]">Checkout</h1>
+      </div>
+      <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+        <form onSubmit={submit} className="rounded-2xl border border-[#cfe5ea] bg-white p-6 sm:p-8">
+          <h2 className="font-display text-2xl text-[#173b61]">Delivery details</h2>
+          <p className="mt-2 text-sm text-[#6a8390]">This is a demo checkout for the college project.</p>
+          {error && <p className="mt-4 rounded-lg bg-[#fae5e1] p-3 text-sm text-[#a84e47]" data-testid="status-checkout-error">{error}</p>}
+          <div className="mt-7 grid gap-5 sm:grid-cols-2">
+            <Field label="Full Name" name="name" required />
+            <Field label="Phone Number" name="mobile" type="tel" required />
+            <Field label="PIN code" name="pin" required />
+          </div>
+          <label className="mt-5 block text-sm font-semibold text-[#31516a]">
+            Delivery Address
+            <textarea required name="address" rows={3} className="mt-2 w-full rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] p-3 text-sm font-normal outline-none focus:border-[#1688c6]" data-testid="input-address" />
+          </label>
+          <div className="mt-6 rounded-xl bg-[#f9f1df] p-4 text-sm leading-relaxed text-[#8a6835]">
+            <strong>Policy:</strong> 100% Advance Payment via UPI. No COD. All items are final sale with strict no-refund/no-return policy. Pre-dispatch verification photos will be sent for your approval.
+          </div>
+          <button type="submit" className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-[#1688c6] px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-[#157bb3]" data-testid="button-place-order">
+            Send Order Request via WhatsApp <ArrowRight size={16} />
+          </button>
+        </form>
+        <aside className="h-fit rounded-2xl bg-[#f9f1df] p-6">
+          <h2 className="font-display text-2xl text-[#173b61]">Order summary</h2>
+          <div className="mt-6 space-y-4">
+            {cart.map((line) => {
+              const p = products.find((item) => item.id === line.productId);
+              if (!p) return null;
+              return (
+                <div key={cartKey(line)} className="flex justify-between gap-3 text-sm">
+                  <span className="text-[#547080]">{p.name}{line.variant ? ` · ${line.variant.label}` : ''} × {line.quantity}</span>
+                  <span className="font-semibold text-[#173b61]">{money((line.variant?.price ?? p.price) * line.quantity)}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-6 space-y-3 border-t border-[#ead7b6] pt-5 text-sm">
+            <div className="flex justify-between text-[#547080]"><span>Subtotal</span><span data-testid="text-checkout-subtotal">{money(subtotal)}</span></div>
+            <div className="flex justify-between text-[#547080]"><span>Shipping</span><span>{shipping ? money(shipping) : 'Free'}</span></div>
+            <div className="flex justify-between pt-2 text-base font-bold text-[#173b61]"><span>Total</span><span data-testid="text-checkout-total">{money(subtotal + shipping)}</span></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </Shell>;
 }
 
 function Confirmation() {
@@ -319,12 +444,55 @@ function Confirmation() {
   return <Shell><div className="mx-auto max-w-2xl px-5 py-20 text-center"><div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#d9eef2] text-[#1688c6]"><CircleCheck size={42} /></div><p className="mt-8 text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Order placed</p><h1 className="mt-3 font-display text-5xl text-[#173b61]">Thank you for choosing handmade.</h1><p className="mx-auto mt-5 max-w-lg leading-7 text-[#547080]">Your demo order has been recorded. Every thoughtful choice helps keep connection and craftsmanship close.</p>{order && <div className="mx-auto mt-10 rounded-2xl bg-[#f9f1df] p-6 text-left"><div className="flex justify-between border-b border-[#ead7b6] pb-4 text-sm"><span className="text-[#6a8390]">Order number</span><strong className="text-[#173b61]" data-testid="text-order-number">{order.number}</strong></div><div className="flex justify-between pt-4 text-sm"><span className="text-[#6a8390]">Order total</span><strong className="text-[#173b61]" data-testid="text-confirmation-total">{money(order.total)}</strong></div></div>}<Link href="/shop" className="mt-9 inline-flex items-center gap-2 rounded-full bg-[#1688c6] px-6 py-3.5 text-sm font-bold text-white" data-testid="link-confirmation-shop">Continue exploring <ArrowRight size={16} /></Link></div></Shell>;
 }
 
-function AdminLoginPrompt() {
-  return <div className="mx-auto max-w-xl px-5 py-24 text-center"><div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#d9eef2] text-[#1688c6]"><ShoppingBag /></div><p className="mt-7 text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Private area</p><h1 className="mt-3 font-display text-5xl text-[#173b61]">Admin access</h1><p className="mt-4 leading-7 text-[#547080]">Sign in with the approved admin account to manage the Mrudugandh product catalogue.</p><Link href="/sign-in" className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#1688c6] px-6 py-3.5 text-sm font-bold text-white">Open admin login <ArrowRight size={16} /></Link></div>;
+function AdminGuard({ children }: { children: ReactNode }) {
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (isLoaded) {
+      if (!user) {
+        setLocation('/admin/sign-in');
+      } else {
+        const email = user.primaryEmailAddress?.emailAddress.toLowerCase();
+        if (email !== 'athinamankar007@gmail.com' && email !== 'mrudugandh.lip@gmail.com') {
+          signOut().then(() => setLocation('/'));
+        }
+      }
+    }
+  }, [user, isLoaded, setLocation, signOut]);
+
+  if (!isLoaded || !user) return null;
+  const email = user.primaryEmailAddress?.emailAddress.toLowerCase();
+  if (email !== 'athinamankar007@gmail.com' && email !== 'mrudugandh.lip@gmail.com') return null;
+
+  return <>{children}</>;
 }
 
 function Admin() {
-  return <><Show when="signed-in"><AdminPanel /></Show><Show when="signed-out"><AdminLoginPrompt /></Show></>;
+  return <AdminGuard><AdminPanel /></AdminGuard>;
+}
+
+function AdminSignInPage() {
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+  const path = `${basePath}/admin/sign-in`;
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#e3f3f7] px-5 py-12">
+      <SignIn
+        routing="path"
+        path={path}
+        forceRedirectUrl={`${basePath}/admin`}
+        appearance={{
+          theme: shadcn,
+          elements: {
+            socialButtonsBlockButton: { display: 'none' },
+            dividerRow: { display: 'none' },
+            footerAction: { display: 'none' },
+          },
+        }}
+      />
+    </div>
+  );
 }
 
 function SignInPage() {
@@ -388,7 +556,7 @@ function Account() {
 function Router() {
   const [location] = useLocation();
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); document.title = location === '/' ? 'Mrudugandh Social Connect' : `Mrudugandh · ${location.slice(1).split('/')[0]}`; }, [location]);
-  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route path="/shop" component={Shop} /><Route path="/product/:id" component={ProductDetail} /><Route path="/about" component={About} /><Route path="/impact" component={Impact} /><Route path="/contact" component={Contact} /><Route path="/cart" component={Cart} /><Route path="/checkout" component={Checkout} /><Route path="/order-confirmation" component={Confirmation} /><Route path="/account" component={Account} /><Route path="/admin" component={Admin} /><Route path="/sign-in" component={SignInPage} /><Route path="/sign-in/:rest*" component={SignInPage} /><Route path="/sign-up" component={SignUpPage} /><Route path="/sign-up/:rest*" component={SignUpPage} /><Route component={NotFound} /></Switch></ErrorBoundary>;
+  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route path="/shop" component={Shop} /><Route path="/product/:id" component={ProductDetail} /><Route path="/about" component={About} /><Route path="/impact" component={Impact} /><Route path="/contact" component={Contact} /><Route path="/cart" component={Cart} /><Route path="/checkout" component={Checkout} /><Route path="/order-confirmation" component={Confirmation} /><Route path="/account" component={Account} /><Route path="/admin" component={Admin} /><Route path="/admin/sign-in" component={AdminSignInPage} /><Route path="/admin/sign-in/:rest*" component={AdminSignInPage} /><Route path="/sign-in" component={SignInPage} /><Route path="/sign-in/:rest*" component={SignInPage} /><Route path="/sign-up" component={SignUpPage} /><Route path="/sign-up/:rest*" component={SignUpPage} /><Route component={NotFound} /></Switch></ErrorBoundary>;
 }
 
 const queryClient = new QueryClient();

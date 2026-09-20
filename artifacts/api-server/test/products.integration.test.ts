@@ -7,7 +7,7 @@ type ProductRecord = {
   description: string;
   price: number;
   imagePath: string | null;
-  variants: Array<{ label: string; price: number }>;
+  variants: Array<{ label: string; price: number; inventory: number; imagePaths: string[] }>;
   inventory: number;
   available: boolean;
   createdAt: Date;
@@ -297,7 +297,7 @@ describe("admin product regression coverage", () => {
           description: "Created by the approved admin",
           price: 999,
           imagePath: upload.body.objectPath,
-          variants: [{ label: "Standard", price: 999 }],
+          variants: [{ label: "Standard", price: 999, inventory: 0, imagePaths: [] }],
           inventory: 4,
           available: true,
         }),

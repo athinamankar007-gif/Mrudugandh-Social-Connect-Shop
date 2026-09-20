@@ -25,6 +25,8 @@ export const listProductsResponsePriceMin = 0;
 
 export const listProductsResponseVariantsItemPriceMin = 0;
 
+export const listProductsResponseVariantsItemInventoryMin = 0;
+
 export const listProductsResponseInventoryMin = 0;
 
 
@@ -39,7 +41,9 @@ export const ListProductsResponseItem = zod.object({
   "imagePaths": zod.array(zod.string()),
   "variants": zod.array(zod.object({
   "label": zod.string().min(1),
-  "price": zod.number().int().min(listProductsResponseVariantsItemPriceMin)
+  "price": zod.number().int().min(listProductsResponseVariantsItemPriceMin),
+  "inventory": zod.number().int().min(listProductsResponseVariantsItemInventoryMin).optional(),
+  "imagePaths": zod.array(zod.string()).optional()
 })),
   "inventory": zod.number().int().min(listProductsResponseInventoryMin),
   "available": zod.boolean(),
@@ -60,6 +64,8 @@ export const createProductBodyPriceMin = 0;
 
 export const createProductBodyVariantsItemPriceMin = 0;
 
+export const createProductBodyVariantsItemInventoryMin = 0;
+
 export const createProductBodyInventoryMin = 0;
 
 
@@ -74,7 +80,9 @@ export const CreateProductBody = zod.object({
   "imagePaths": zod.array(zod.string()).optional(),
   "variants": zod.array(zod.object({
   "label": zod.string().min(1),
-  "price": zod.number().int().min(createProductBodyVariantsItemPriceMin)
+  "price": zod.number().int().min(createProductBodyVariantsItemPriceMin),
+  "inventory": zod.number().int().min(createProductBodyVariantsItemInventoryMin).optional(),
+  "imagePaths": zod.array(zod.string()).optional()
 })).optional(),
   "inventory": zod.number().int().min(createProductBodyInventoryMin).optional(),
   "available": zod.boolean().optional()
@@ -84,6 +92,8 @@ export const createProductResponsePriceMin = 0;
 
 
 export const createProductResponseVariantsItemPriceMin = 0;
+
+export const createProductResponseVariantsItemInventoryMin = 0;
 
 export const createProductResponseInventoryMin = 0;
 
@@ -99,7 +109,9 @@ export const CreateProductResponse = zod.object({
   "imagePaths": zod.array(zod.string()),
   "variants": zod.array(zod.object({
   "label": zod.string().min(1),
-  "price": zod.number().int().min(createProductResponseVariantsItemPriceMin)
+  "price": zod.number().int().min(createProductResponseVariantsItemPriceMin),
+  "inventory": zod.number().int().min(createProductResponseVariantsItemInventoryMin).optional(),
+  "imagePaths": zod.array(zod.string()).optional()
 })),
   "inventory": zod.number().int().min(createProductResponseInventoryMin),
   "available": zod.boolean(),
@@ -120,6 +132,8 @@ export const getProductResponsePriceMin = 0;
 
 export const getProductResponseVariantsItemPriceMin = 0;
 
+export const getProductResponseVariantsItemInventoryMin = 0;
+
 export const getProductResponseInventoryMin = 0;
 
 
@@ -134,7 +148,9 @@ export const GetProductResponse = zod.object({
   "imagePaths": zod.array(zod.string()),
   "variants": zod.array(zod.object({
   "label": zod.string().min(1),
-  "price": zod.number().int().min(getProductResponseVariantsItemPriceMin)
+  "price": zod.number().int().min(getProductResponseVariantsItemPriceMin),
+  "inventory": zod.number().int().min(getProductResponseVariantsItemInventoryMin).optional(),
+  "imagePaths": zod.array(zod.string()).optional()
 })),
   "inventory": zod.number().int().min(getProductResponseInventoryMin),
   "available": zod.boolean(),
@@ -157,6 +173,8 @@ export const updateProductBodyPriceMin = 0;
 
 export const updateProductBodyVariantsItemPriceMin = 0;
 
+export const updateProductBodyVariantsItemInventoryMin = 0;
+
 export const updateProductBodyInventoryMin = 0;
 
 
@@ -170,7 +188,9 @@ export const UpdateProductBody = zod.object({
   "imagePaths": zod.array(zod.string()).optional(),
   "variants": zod.array(zod.object({
   "label": zod.string().min(1),
-  "price": zod.number().int().min(updateProductBodyVariantsItemPriceMin)
+  "price": zod.number().int().min(updateProductBodyVariantsItemPriceMin),
+  "inventory": zod.number().int().min(updateProductBodyVariantsItemInventoryMin).optional(),
+  "imagePaths": zod.array(zod.string()).optional()
 })).optional(),
   "inventory": zod.number().int().min(updateProductBodyInventoryMin).optional(),
   "available": zod.boolean().optional()
@@ -180,6 +200,8 @@ export const updateProductResponsePriceMin = 0;
 
 
 export const updateProductResponseVariantsItemPriceMin = 0;
+
+export const updateProductResponseVariantsItemInventoryMin = 0;
 
 export const updateProductResponseInventoryMin = 0;
 
@@ -195,7 +217,9 @@ export const UpdateProductResponse = zod.object({
   "imagePaths": zod.array(zod.string()),
   "variants": zod.array(zod.object({
   "label": zod.string().min(1),
-  "price": zod.number().int().min(updateProductResponseVariantsItemPriceMin)
+  "price": zod.number().int().min(updateProductResponseVariantsItemPriceMin),
+  "inventory": zod.number().int().min(updateProductResponseVariantsItemInventoryMin).optional(),
+  "imagePaths": zod.array(zod.string()).optional()
 })),
   "inventory": zod.number().int().min(updateProductResponseInventoryMin),
   "available": zod.boolean(),

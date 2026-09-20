@@ -1,0 +1,22 @@
+Please make the following specific backend and frontend updates. Crucial rule: Do not change the existing color scheme, fonts, or overall layout design.
+1. Front-End Shop Display Order & Naming
+⚬	Order: Rearrange the main shop page so categories appear in this exact top-to-bottom priority: 1) Bedsheets & all Dohar categories, 2) Stoles and Kantha work dupattas, 3) Tote Bags, 4) Bamboo Products, 5) Gullak (Piggybank).
+⚬	Naming: Rename 'Bamboo Triveties/Bamboo TVD' to exactly 'Trivets'. Rename 'wooden base piggy bank' to exactly 'Gullak (Piggybank)' across the entire site.
+2. Admin Panel: Variant-Level Image Uploads (CRUCIAL)
+⚬	Currently, image uploads are handled at the parent 'Product' level. I need image uploads handled at the 'Variant' level.
+⚬	In the Admin Dashboard, modify the 'Variants' section so that every single variant row has its own dedicated 'Upload Image' button next to its price and inventory fields.
+⚬	This must apply to: Kids Dohar ('Junior Champ' and 'Senior Champ'), Plain/Patchwork Dohar ('Single' and 'Double'), and Bedsheets ('Single', 'King Size', 'Superking Size').
+⚬	On the live website, when a customer toggles between these sizes, the main product image must dynamically switch to the specific image uploaded for that variant.
+3. Admin Authentication (Email & Password)
+⚬	Remove the Google OAuth auto-login system for the /admin route.
+⚬	Implement a strict Email and Password login screen for the admin panel.
+⚬	Authorize multiple admin accounts . Allow login using either my  Email:-athinamankar007@gmail.com  or the ngos official email - mrudugandh.lIp@gmail.com  and Password: admin123.
+⚬	Unauthorized users must be redirected to the home page.
+4. WhatsApp Checkout Flow & Store Policy
+⚬	Do not integrate Stripe/Razorpay.
+⚬	In the checkout modal, collect customer details: Full Name, Delivery Address, Pincode, and Phone Number.
+⚬	Add an 'Order & Return Policy' text below the fields: '100% Advance Payment via UPI. No COD. All items are final sale with strict no-refund/no-return policy. Pre-dispatch verification photos will be sent for your approval.'
+⚬	Replace the final checkout button with 'Send Order Request via WhatsApp'.
+⚬	Clicking this button must open [https://wa.me/](https://wa.me/)[+91 86683 31267]text= followed by a pre-filled message URL-encoded to say:
+'New Order Request from Website! Items: [Cart Details]. Total: ₹[Total]. Address: [Customer Address].'
+⚬	After clicking, the website should show a success popup saying: 'Your order request has been sent! Our team will message you on WhatsApp shortly to confirm your order and share the payment QR code.'"
