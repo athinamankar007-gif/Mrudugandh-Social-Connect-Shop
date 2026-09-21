@@ -22,7 +22,7 @@ timeoutMs = 20000
 [userenv]
 
 [userenv.shared]
-ADMIN_EMAILS = "athinamankar007@gmail.com,mrudugandh.lIp@gmail.com"
+ADMIN_EMAILS = "athinamankar007@gmail.com,mrudugandh.llp@gmail.com"
 
 [nix]
 channel = "stable-25_05"

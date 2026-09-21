@@ -215,6 +215,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
+  /storage/review-uploads/request-url:
+    post:
+      tags: [Storage]
+      operationId: requestReviewImageUploadUrl
+      summary: Request a presigned URL for an authenticated customer review image
+      security: [{ clerk: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewImageUploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          description: Invalid image metadata or size
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
   /storage/public-objects/{filePath}:
     get:
       tags: [Storage]
@@ -265,8 +296,142 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
+  /orders:
+    get:
+      tags: [orders]
+      operationId: listOrders
+      security: [{ clerk: [] }]
+      responses:
+        "200": { description: Own orders, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Order" } } } } }
+    post:
+      tags: [orders]
+      operationId: createOrder
+      security: [{ clerk: [] }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/OrderInput" } } } }
+      responses:
+        "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/Order" } } } }
+  /orders/{id}/cancel:
+    post:
+      tags: [orders]
+      operationId: cancelOrder
+      security: [{ clerk: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/CancelOrderInput" } } } }
+      responses: { "200": { description: Cancelled, content: { application/json: { schema: { $ref: "#/components/schemas/Order" } } } } }
+  /admin/orders:
+    get:
+      tags: [orders]
+      operationId: adminListOrders
+      security: [{ clerk: [] }]
+      responses:
+        "200": { description: All orders, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Order" } } } } }
+  /admin/orders/{id}:
+    patch:
+      tags: [orders]
+      operationId: adminUpdateOrder
+      security: [{ clerk: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/OrderUpdate" } } } }
+      responses: { "200": { description: Updated, content: { application/json: { schema: { $ref: "#/components/schemas/Order" } } } } }
+  /reviews:
+    get:
+      tags: [reviews]
+      operationId: listReviews
+      responses: { "200": { description: Approved reviews, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Review" } } } } } }
+    post:
+      tags: [reviews]
+      operationId: createReview
+      security: [{ clerk: [] }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/ReviewInput" } } } }
+      responses: { "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/Review" } } } } }
+  /reviews/mine:
+    get:
+      tags: [reviews]
+      operationId: listOwnReviews
+      security: [{ clerk: [] }]
+      responses: { "200": { description: Own reviews, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Review" } } } } } }
+  /admin/reviews:
+    get:
+      tags: [reviews]
+      operationId: adminListReviews
+      security: [{ clerk: [] }]
+      responses: { "200": { description: All reviews, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Review" } } } } } }
+  /admin/reviews/{id}:
+    patch:
+      tags: [reviews]
+      operationId: adminUpdateReview
+      security: [{ clerk: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/ReviewUpdate" } } } }
+      responses: { "200": { description: Updated, content: { application/json: { schema: { $ref: "#/components/schemas/Review" } } } } }
 components:
+  securitySchemes:
+    clerk:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
+    Order:
+      type: object
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        itemSnapshots: { type: array, items: {} }
+        fullName: { type: string }
+        phone: { type: string }
+        pin: { type: string }
+        address: { type: string }
+        total: { type: integer, minimum: 0 }
+        status: { type: string, enum: [Pending, Confirmed, Dispatched, Cancelled] }
+        cancellationReason: { type: [string, "null"] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, userId, itemSnapshots, fullName, phone, pin, address, total, status, cancellationReason, createdAt, updatedAt]
+    OrderInput:
+      type: object
+      properties:
+        itemSnapshots: { type: array, items: {} }
+        fullName: { type: string, minLength: 1 }
+        phone: { type: string, minLength: 1 }
+        pin: { type: string, minLength: 1 }
+        address: { type: string, minLength: 1 }
+        total: { type: integer, minimum: 0 }
+      required: [itemSnapshots, fullName, phone, pin, address, total]
+    CancelOrderInput:
+      type: object
+      properties: { cancellationReason: { type: string, minLength: 1 } }
+      required: [cancellationReason]
+    OrderUpdate:
+      type: object
+      properties:
+        status: { type: string, enum: [Pending, Confirmed, Dispatched, Cancelled] }
+        cancellationReason: { type: [string, "null"] }
+      required: [status]
+    Review:
+      type: object
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        reviewerName: { type: string }
+        reviewerEmail: { type: string }
+        message: { type: string }
+        imagePaths: { type: array, items: { type: string } }
+        adminReply: { type: [string, "null"] }
+        approved: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, userId, reviewerName, reviewerEmail, message, imagePaths, adminReply, approved, createdAt, updatedAt]
+    ReviewInput:
+      type: object
+      properties:
+        message: { type: string, minLength: 1 }
+        imagePaths: { type: array, items: { type: string } }
+      required: [message]
+    ReviewUpdate:
+      type: object
+      properties:
+        adminReply: { type: [string, "null"] }
+        approved: { type: boolean }
     HealthStatus:
       type: object
       properties:
@@ -401,6 +566,13 @@ components:
         contentType:
           type: string
           minLength: 1
+      required: [name, size, contentType]
+    ReviewImageUploadUrlRequest:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        size: { type: integer, minimum: 1, maximum: 10485760 }
+        contentType: { type: string, enum: [image/jpeg, image/png, image/webp, image/gif] }
       required: [name, size, contentType]
     UploadUrlResponse:
       type: object

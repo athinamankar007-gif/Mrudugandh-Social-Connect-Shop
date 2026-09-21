@@ -1,8 +1,9 @@
 import { createContext, type ChangeEvent, type FormEvent, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ClerkProvider, Show, SignIn, SignUp, useUser, UserButton, useClerk } from '@clerk/react';
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
+import { ClerkProvider, Show, SignIn, SignUp, useUser, useAuth, UserButton, useClerk } from '@clerk/react';
 import { shadcn } from '@clerk/themes';
-import { useListProducts, type Product as ApiProduct } from '@workspace/api-client-react';
+import { useListProducts, useListOrders, useCreateOrder, useCancelOrder, getListOrdersQueryKey, requestReviewImageUploadUrl, useCreateReview, getListReviewsQueryKey, type Product as ApiProduct } from '@workspace/api-client-react';
+import { setAuthTokenGetter } from '@workspace/api-client-react';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -35,6 +36,7 @@ import galleryImg6 from '../../../attached_assets/6_PHOTO-2026-09-19-15-10-38_17
 type Variant = { label: string; price: number; inventory?: number; imagePaths?: string[]; images?: string[] };
 type Product = { id: string; name: string; category: string; price: number; description: string; variants?: Variant[]; image: string | null; images: string[]; imagePath?: string | null; imagePaths?: string[]; inventory?: number; available?: boolean };
 type CartLine = { productId: string; quantity: number; variant?: Variant };
+type PendingCheckout = { name: string; mobile: string; pin: string; address: string; itemsList: string; totalAmount: number; text: string; url: string };
 
 const money = (value: number) => `₹${value.toLocaleString('en-IN')}`;
 const categoryOrder = ['Bedsheets', 'Dohars', 'Stoles and Dupattas', 'Tote Bags', 'Bamboo Products', 'Gullak (Piggybank)'];
@@ -178,7 +180,7 @@ function Header() {
 }
 
 function Footer() {
-  return <footer className="mt-24 bg-[#14395f] text-[#edf8fa]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr] lg:px-8"><div><img src={logo} alt="Mrudugandh Social Connect" className="mb-5 h-16 w-16 rounded-full object-cover" /><h2 className="font-display text-2xl">Handmade with Purpose.<br />Connected with Heart.</h2><p className="mt-4 max-w-xs text-sm leading-6 text-[#bfd5de]">A shop with a human story, celebrating traditional skills and meaningful craftsmanship.</p></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Explore</p><Link href="/shop" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-shop">Shop products</Link><Link href="/about" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-about">Our story</Link><Link href="/impact" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-impact">Our impact</Link></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Stay connected</p><div className="space-y-1 text-sm leading-6 text-[#bfd5de]"><p>Phone: +91 86683 31267 / +91 88309 65756</p><p>Email: mrudugandh.lIp@gmail.com</p><p>Address: C/o - 35, Phatak Baug, Navi Peth, Sadashiv Peth, Pune, Maharashtra 411030</p></div><Link href="/contact" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white" data-testid="link-footer-contact">Contact us <ArrowRight size={15} /></Link></div></div><div className="border-t border-[#365875] px-5 py-5 text-center text-xs text-[#a8c3ce]">© {new Date().getFullYear()} Mrudugandh Social Connect. Handmade with purpose.</div></footer>;
+  return <footer className="mt-24 bg-[#14395f] text-[#edf8fa]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr] lg:px-8"><div><img src={logo} alt="Mrudugandh Social Connect" className="mb-5 h-16 w-16 rounded-full object-cover" /><h2 className="font-display text-2xl">Handmade with Purpose.<br />Connected with Heart.</h2><p className="mt-4 max-w-xs text-sm leading-6 text-[#bfd5de]">A shop with a human story, celebrating traditional skills and meaningful craftsmanship.</p></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Explore</p><Link href="/shop" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-shop">Shop products</Link><Link href="/about" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-about">Our story</Link><Link href="/impact" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-impact">Our impact</Link></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Stay connected</p><div className="space-y-1 text-sm leading-6 text-[#bfd5de]"><p>Phone: +91 86683 31267 / +91 88309 65756</p><p>Email: mrudugandh.llp@gmail.com</p><p>Address: C/o - 35, Phatak Baug, Navi Peth, Sadashiv Peth, Pune, Maharashtra 411030</p></div><Link href="/contact" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white" data-testid="link-footer-contact">Contact us <ArrowRight size={15} /></Link></div></div><div className="border-t border-[#365875] px-5 py-5 text-center text-xs text-[#a8c3ce]">© {new Date().getFullYear()} Mrudugandh Social Connect. Handmade with purpose.</div></footer>;
 }
 
 function Shell({ children }: { children: ReactNode }) {
@@ -294,7 +296,7 @@ function Impact() {
   <div className="mt-20 grid gap-10 rounded-3xl bg-[#173b61] p-8 text-white lg:grid-cols-[1fr_auto] lg:items-center lg:p-14"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">A simple invitation</p><h2 className="mt-4 max-w-xl font-display text-4xl leading-tight">Bring Home Something Meaningful.</h2><p className="mt-4 max-w-lg leading-7 text-[#c8dce4]">Explore pieces that make everyday spaces feel more personal—and keep the connection moving.</p></div><Link href="/shop" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#efb34f] px-6 py-3.5 text-sm font-bold text-[#173b61]" data-testid="link-impact-shop">Shop with purpose <ArrowRight size={16} /></Link></div></div></Shell>;
 }
 
-function Contact() {
+function LegacyContact() {
   const [sent, setSent] = useState(false);
   const [photo, setPhoto] = useState<File | null>(null);
 
@@ -320,6 +322,36 @@ function Contact() {
   <label className="mt-5 block text-sm font-semibold text-[#31516a]">Your Review<textarea required rows={4} className="mt-2 w-full rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] p-3 text-sm outline-none focus:border-[#1688c6]" data-testid="input-contact-message" placeholder="What do you think about the product?" /></label><button type="submit" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#1688c6] px-6 py-3.5 text-sm font-bold text-white" data-testid="button-submit-contact">Submit Review <ArrowRight size={16} /></button></>}</form></div></div></Shell>;
 }
 
+function Contact() {
+  const { isSignedIn } = useAuth();
+  const createReview = useCreateReview();
+  const queryClient = useQueryClient();
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!isSignedIn) { setError("Please sign in before submitting a review."); return; }
+    setBusy(true); setError("");
+    try {
+      const form = new FormData(event.currentTarget);
+      const imagePaths: string[] = [];
+      if (photo) {
+        const upload = await requestReviewImageUploadUrl({ name: photo.name, size: photo.size, contentType: photo.type as any });
+        const response = await fetch(upload.uploadURL, { method: "PUT", headers: { "Content-Type": photo.type }, body: photo });
+        if (!response.ok) throw new Error("Could not upload the purchase photo.");
+        imagePaths.push(upload.objectPath);
+      }
+      await createReview.mutateAsync({ data: { message: String(form.get("message") || "").trim(), imagePaths } });
+      await queryClient.invalidateQueries({ queryKey: getListReviewsQueryKey() });
+      setSent(true); setPhoto(null); event.currentTarget.reset();
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not submit your review. Please try again."); }
+    finally { setBusy(false); }
+  };
+  return <Shell><div className="mx-auto max-w-6xl px-5 pb-24 pt-14 lg:px-8"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Stay connected</p><h1 className="mt-4 font-display text-5xl text-[#173b61] sm:text-6xl">We would love to hear from you.</h1><p className="mt-5 leading-7 text-[#547080]">Have a question about a product or your order? Send us a note, or leave a review.</p></div><div className="mt-14 grid gap-10 lg:grid-cols-[.7fr_1.3fr]"><div className="rounded-2xl bg-[#e3f3f7] p-7"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Contact details</p><div className="mt-8 space-y-6 text-sm text-[#547080]"><div><p className="font-bold text-[#173b61]">Phone</p><p className="mt-1">+91 86683 31267 / +91 88309 65756</p></div><div><p className="font-bold text-[#173b61]">Email</p><p className="mt-1">mrudugandh.llp@gmail.com</p></div><div><p className="font-bold text-[#173b61]">Address</p><p className="mt-1">C/o - 35, Phatak Baug, Navi Peth, Sadashiv Peth, Pune, Maharashtra 411030</p></div></div></div><form onSubmit={submit} className="rounded-2xl border border-[#cfe5ea] bg-white p-6 shadow-[0_5px_20px_rgba(17,55,91,.04)] sm:p-8">{sent ? <div className="flex min-h-[280px] flex-col items-center justify-center text-center"><Sparkles className="text-[#1688c6]" size={42} /><h2 className="mt-5 font-display text-3xl text-[#173b61]">Review received!</h2><p className="mt-2 text-[#6a8390]">Thank you for sharing your experience with us. It means the world to our artisans.</p><button onClick={() => setSent(false)} type="button" className="mt-6 text-sm font-bold text-[#1688c6]">Submit another review</button></div> : <><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Share your experience</p><h2 className="mt-2 font-display text-2xl text-[#173b61]">Give us a review about your product!</h2>{!isSignedIn && <p className="mt-4 rounded-lg bg-[#f9f1df] p-3 text-sm text-[#8a6835]">Please sign in to submit a review.</p>}{error && <p className="mt-4 rounded-lg bg-[#fae5e1] p-3 text-sm text-[#a84e47]">{error}</p>}<label className="mt-6 block text-sm font-semibold text-[#31516a]">Purchase Photo (optional)<input type="file" accept="image/*" onChange={(e) => setPhoto(e.target.files?.[0] || null)} className="mt-2 block w-full rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] p-3 text-sm" />{photo && <span className="mt-1 block text-xs text-[#6a8390]">{photo.name}</span>}</label><label className="mt-5 block text-sm font-semibold text-[#31516a]">Your Review<textarea name="message" required rows={4} className="mt-2 w-full rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] p-3 text-sm outline-none focus:border-[#1688c6]" placeholder="What do you think about the product?" /></label><button disabled={!isSignedIn || busy} type="submit" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#1688c6] px-6 py-3.5 text-sm font-bold text-white disabled:opacity-50">{busy ? "Submitting…" : "Submit Review"} <ArrowRight size={16} /></button></>}</form></div></div></Shell>;
+}
+
 function Field({ label, name, type = 'text', required = false, value, onChange }: { label: string; name: string; type?: string; required?: boolean; value?: string; onChange?: (e: ChangeEvent<HTMLInputElement>) => void }) {
   return <label className="block text-sm font-semibold text-[#31516a]">{label}<input name={name} type={type} required={required} value={value} onChange={onChange} className="mt-2 w-full rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] px-3 py-3 text-sm font-normal outline-none focus:border-[#1688c6]" data-testid={`input-${name}`} /></label>;
 }
@@ -327,10 +359,21 @@ function Field({ label, name, type = 'text', required = false, value, onChange }
 function Checkout() {
   const { products } = useProducts();
   const { cart, subtotal, clear } = useCart();
+  const { user } = useUser();
+  const { isSignedIn } = useAuth();
+  const createOrder = useCreateOrder();
+  const cancelOrder = useCancelOrder();
   const [, setLocation] = useLocation();
   const shipping = subtotal >= 2999 ? 0 : 100;
   const [error, setError] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showDecision, setShowDecision] = useState(false);
+  const [showCancellation, setShowCancellation] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [otherReason, setOtherReason] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [persistedOrderId, setPersistedOrderId] = useState<string | null>(null);
+  const [pendingCheckout, setPendingCheckout] = useState<PendingCheckout | null>(null);
 
   if (!cart.length && !showSuccess) return <Shell><Empty title="Nothing to check out" copy="Your cart is empty. Start with something meaningful." href="/shop" action="Go to shop" /></Shell>;
 
@@ -351,26 +394,106 @@ function Checkout() {
     const text = `New Order Request from Website! Items: ${itemsList}. Total: ₹${totalAmount}. Address: ${name}, ${address}, PIN: ${pin}, Phone: ${mobile}.`;
 
     const url = `https://wa.me/918668331267?text=${encodeURIComponent(text)}`;
-    const order = { number: `MRD-${Date.now().toString().slice(-7)}`, name, total: totalAmount, items: cart };
-
-    try {
-      const win = window.open(url, '_blank');
-      if (!win || win.closed || typeof win.closed === 'undefined') {
-        setError('Popup blocked. Please allow popups for this site to open WhatsApp.');
-        return;
-      }
-    } catch (err) {
-      setError('Could not open WhatsApp. Please try again or check your browser settings.');
+    if (!isSignedIn) {
+      setLocation('/sign-in');
       return;
     }
-
-    localStorage.setItem('mrudugandh-order', JSON.stringify(order));
-    clear();
+    setShowDecision(true);
     setError('');
-    setShowSuccess(true);
+    setPendingCheckout({ name, mobile, pin, address, itemsList, totalAmount, text, url });
+  };
+
+  const proceed = async () => {
+    const data = pendingCheckout;
+    if (isSubmitting || !data) return;
+    const whatsappWindow = window.open('', '_blank');
+    if (!whatsappWindow) {
+      setError('Popup blocked. Please allow popups for this site to open WhatsApp.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const order = persistedOrderId ? null : await createOrder.mutateAsync({
+        data: {
+          fullName: data.name,
+          phone: data.mobile,
+          pin: data.pin,
+          address: data.address,
+          total: data.totalAmount,
+          itemSnapshots: cart.map((line) => {
+            const p = products.find((item) => item.id === line.productId);
+            return { productId: line.productId, name: p?.name ?? 'Item', variant: line.variant?.label ?? null, quantity: line.quantity, price: line.variant?.price ?? p?.price ?? 0 };
+          }),
+        },
+      });
+      if (order) setPersistedOrderId(order.id);
+      whatsappWindow.location.href = data.url;
+      localStorage.setItem('mrudugandh-order', JSON.stringify({ number: order?.id ?? persistedOrderId, total: data.totalAmount }));
+      clear();
+      setPendingCheckout(null);
+      setShowDecision(false);
+      setShowSuccess(true);
+    } catch (err) {
+      whatsappWindow.close();
+      setError(err instanceof Error ? err.message : 'Could not save your order. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const cancelCheckout = async () => {
+    const reason = cancelReason === 'Other' ? otherReason.trim() : cancelReason;
+    const data = pendingCheckout;
+    if (!reason || isSubmitting || !data) return;
+    setIsSubmitting(true);
+    try {
+      const created = persistedOrderId ? { id: persistedOrderId } : await createOrder.mutateAsync({
+        data: {
+          fullName: data.name, phone: data.mobile, pin: data.pin, address: data.address, total: data.totalAmount,
+          itemSnapshots: cart.map((line) => ({ productId: line.productId, variant: line.variant?.label ?? null, quantity: line.quantity })),
+        },
+      });
+      await cancelOrder.mutateAsync({ id: created.id, data: { cancellationReason: reason } });
+      setError('');
+      clear();
+      setPendingCheckout(null);
+      setShowCancellation(false);
+      setShowDecision(false);
+      setLocation('/account');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not record the cancellation. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return <Shell>
+    {showDecision && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#153a67]/60 p-5 backdrop-blur-sm">
+        <div className="w-full max-w-md rounded-2xl bg-white p-7 shadow-2xl">
+          <h2 className="font-display text-2xl text-[#173b61]">Do you want to proceed to WhatsApp to confirm your order and make the payment?</h2>
+          <div className="mt-7 grid gap-3">
+            <button disabled={isSubmitting} onClick={proceed} className="rounded-full bg-[#1688c6] px-5 py-3.5 text-sm font-bold text-white disabled:opacity-50">Yes, Proceed to WhatsApp</button>
+            <button disabled={isSubmitting} onClick={() => setShowCancellation(true)} className="rounded-full border border-[#cfe5ea] px-5 py-3.5 text-sm font-bold text-[#173b61] disabled:opacity-50">No, Cancel Order</button>
+          </div>
+        </div>
+      </div>
+    )}
+    {showCancellation && (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#153a67]/60 p-5 backdrop-blur-sm">
+        <div className="w-full max-w-md rounded-2xl bg-white p-7 shadow-2xl">
+          <h2 className="font-display text-2xl text-[#173b61]">Why are you cancelling?</h2>
+          <select value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} className="mt-5 w-full rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] px-3 py-3 text-sm">
+            <option value="">Select a reason</option><option>Ordered by mistake</option><option>Changed my mind</option><option>Testing</option><option>Other</option>
+          </select>
+          {cancelReason === 'Other' && <textarea value={otherReason} onChange={(e) => setOtherReason(e.target.value)} required rows={3} placeholder="Tell us why" className="mt-3 w-full rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] p-3 text-sm" />}
+          <div className="mt-6 flex gap-3">
+            <button disabled={isSubmitting || !cancelReason || (cancelReason === 'Other' && !otherReason.trim())} onClick={cancelCheckout} className="flex-1 rounded-full bg-[#a84e47] px-4 py-3 text-sm font-bold text-white disabled:opacity-50">Confirm cancellation</button>
+            <button disabled={isSubmitting} onClick={() => setShowCancellation(false)} className="rounded-full border border-[#cfe5ea] px-4 py-3 text-sm font-bold text-[#173b61]">Back</button>
+          </div>
+        </div>
+      </div>
+    )}
     {showSuccess && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#153a67]/60 p-5 backdrop-blur-sm">
         <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-2xl">
@@ -455,7 +578,7 @@ function AdminGuard({ children }: { children: ReactNode }) {
         setLocation('/admin/sign-in');
       } else {
         const email = user.primaryEmailAddress?.emailAddress.toLowerCase();
-        if (email !== 'athinamankar007@gmail.com' && email !== 'mrudugandh.lip@gmail.com') {
+        if (email !== 'athinamankar007@gmail.com' && email !== 'mrudugandh.llp@gmail.com') {
           signOut().then(() => setLocation('/'));
         }
       }
@@ -464,7 +587,7 @@ function AdminGuard({ children }: { children: ReactNode }) {
 
   if (!isLoaded || !user) return null;
   const email = user.primaryEmailAddress?.emailAddress.toLowerCase();
-  if (email !== 'athinamankar007@gmail.com' && email !== 'mrudugandh.lip@gmail.com') return null;
+  if (email !== 'athinamankar007@gmail.com' && email !== 'mrudugandh.llp@gmail.com') return null;
 
   return <>{children}</>;
 }
@@ -507,7 +630,13 @@ function SignUpPage() {
 
 function Account() {
   const { user } = useUser();
-  const [order] = useState(() => { try { return JSON.parse(localStorage.getItem('mrudugandh-order') || 'null'); } catch { return null; } });
+  const { isSignedIn } = useAuth();
+  const ordersQuery = useListOrders({ query: { queryKey: getListOrdersQueryKey(), enabled: Boolean(isSignedIn) } });
+  const cancelOrder = useCancelOrder();
+  const [cancelTarget, setCancelTarget] = useState<string | null>(null);
+  const [reason, setReason] = useState('');
+  const [other, setOther] = useState('');
+  const chosenReason = reason === 'Other' ? other.trim() : reason;
 
   return <Shell><div className="mx-auto max-w-4xl px-5 pb-24 pt-14 lg:px-8">
     <div className="mb-10"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Your Account</p><h1 className="mt-3 font-display text-5xl text-[#173b61]">My Profile</h1></div>
@@ -523,25 +652,22 @@ function Account() {
       </div>
 
       <h2 className="mb-6 font-display text-3xl text-[#173b61]">Order History</h2>
-      {order ? <div className="rounded-2xl border border-[#cfe5ea] bg-white p-6 sm:p-8">
+      {ordersQuery.isLoading ? <CatalogMessage title="Loading your orders…" copy="Fetching your order history." /> : ordersQuery.isError ? <CatalogMessage title="Orders unavailable" copy="Please refresh and try again." /> : ordersQuery.data?.length ? <div className="space-y-4">{ordersQuery.data.map((order) => <div key={order.id} className="rounded-2xl border border-[#cfe5ea] bg-white p-6 sm:p-8">
         <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#cfe5ea] pb-6">
-          <div><p className="text-sm font-bold text-[#1688c6]">Order #{order.number}</p><p className="mt-1 text-xs text-[#6a8390]">Placed recently</p></div>
-          <p className="font-display text-xl text-[#173b61]">{money(order.total)}</p>
+          <div><p className="text-sm font-bold text-[#1688c6]">Order #{order.id.slice(0, 8)}</p><p className="mt-1 text-xs text-[#6a8390]">{new Date(order.createdAt).toLocaleDateString()}</p></div>
+          <div className="text-right"><p className="font-display text-xl text-[#173b61]">{money(order.total)}</p><span className={`mt-1 inline-block rounded-full px-3 py-1 text-xs font-bold ${order.status === 'Cancelled' ? 'bg-[#fae5e1] text-[#a84e47]' : 'bg-[#e3f3f7] text-[#1688c6]'}`}>{order.status || 'Pending'}</span></div>
         </div>
-        <div className="mt-6 space-y-4">
-          {order.items?.map((item: any, i: number) => (
-            <div key={i} className="flex justify-between text-sm">
-              <span className="text-[#547080]">Product ID: {item.productId} × {item.quantity}</span>
-            </div>
-          ))}
-        </div>
-      </div> : <div className="rounded-2xl border border-dashed border-[#9ecbd5] bg-[#edf8f9] py-16 text-center">
+        <div className="mt-6 space-y-3">{order.itemSnapshots.map((item: any, i) => <div key={i} className="flex justify-between text-sm"><span className="text-[#547080]">{item.name || item.productId} {item.variant ? `· ${item.variant}` : ''} × {item.quantity}</span><span className="text-[#173b61]">{item.price ? money(item.price * item.quantity) : ''}</span></div>)}</div>
+        {order.cancellationReason && <p className="mt-5 rounded-lg bg-[#fae5e1] p-3 text-sm text-[#a84e47]">Cancellation reason: {order.cancellationReason}</p>}
+        {order.status === 'Pending' && <button onClick={() => setCancelTarget(order.id)} className="mt-6 rounded-full border border-[#f2c7c2] px-4 py-2 text-xs font-bold text-[#a84e47]">Cancel Order</button>}
+      </div>)}</div> : <div className="rounded-2xl border border-dashed border-[#9ecbd5] bg-[#edf8f9] py-16 text-center">
         <ShoppingBag className="mx-auto text-[#1688c6]" size={28} />
         <h3 className="mt-4 font-display text-xl text-[#173b61]">No orders yet</h3>
         <p className="mt-2 text-sm text-[#6b8490]">When you place an order, it will appear here.</p>
         <Link href="/shop" className="mt-5 inline-block text-sm font-bold text-[#1688c6]">Explore the shop</Link>
       </div>}
-    </Show>
+      </Show>
+      {cancelTarget && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#153a67]/60 p-5"><div className="w-full max-w-md rounded-2xl bg-white p-7"><h2 className="font-display text-2xl text-[#173b61]">Cancel Order</h2><select value={reason} onChange={(e) => setReason(e.target.value)} className="mt-5 w-full rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] px-3 py-3 text-sm"><option value="">Select a reason</option><option>Ordered by mistake</option><option>Changed my mind</option><option>Testing</option><option>Other</option></select>{reason === 'Other' && <textarea value={other} onChange={(e) => setOther(e.target.value)} className="mt-3 w-full rounded-xl border border-[#cfe5ea] p-3 text-sm" placeholder="Tell us why" /> }<div className="mt-6 flex gap-3"><button disabled={!chosenReason || cancelOrder.isPending} onClick={async () => { await cancelOrder.mutateAsync({ id: cancelTarget, data: { cancellationReason: chosenReason } }); await ordersQuery.refetch(); setCancelTarget(null); setReason(''); setOther(''); }} className="flex-1 rounded-full bg-[#a84e47] px-4 py-3 text-sm font-bold text-white disabled:opacity-50">Confirm cancellation</button><button onClick={() => setCancelTarget(null)} className="rounded-full border border-[#cfe5ea] px-4 py-3 text-sm font-bold text-[#173b61]">Back</button></div></div></div>}
     <Show when="signed-out">
       <div className="rounded-2xl bg-[#e3f3f7] p-10 text-center">
         <User className="mx-auto text-[#1688c6]" size={32} />
@@ -559,9 +685,18 @@ function Router() {
   return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route path="/shop" component={Shop} /><Route path="/product/:id" component={ProductDetail} /><Route path="/about" component={About} /><Route path="/impact" component={Impact} /><Route path="/contact" component={Contact} /><Route path="/cart" component={Cart} /><Route path="/checkout" component={Checkout} /><Route path="/order-confirmation" component={Confirmation} /><Route path="/account" component={Account} /><Route path="/admin" component={Admin} /><Route path="/admin/sign-in" component={AdminSignInPage} /><Route path="/admin/sign-in/:rest*" component={AdminSignInPage} /><Route path="/sign-in" component={SignInPage} /><Route path="/sign-in/:rest*" component={SignInPage} /><Route path="/sign-up" component={SignUpPage} /><Route path="/sign-up/:rest*" component={SignUpPage} /><Route component={NotFound} /></Switch></ErrorBoundary>;
 }
 
+function ApiAuthBridge() {
+  const { getToken } = useAuth();
+  useEffect(() => {
+    setAuthTokenGetter(() => getToken());
+    return () => setAuthTokenGetter(null);
+  }, [getToken]);
+  return null;
+}
+
 const queryClient = new QueryClient();
 function App() {
-  return <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY} appearance={{ theme: shadcn }}><QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><ProductsProvider><CartProvider><Router /></CartProvider></ProductsProvider></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider></ClerkProvider>;
+  return <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY} appearance={{ theme: shadcn }}><ApiAuthBridge /><QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><ProductsProvider><CartProvider><Router /></CartProvider></ProductsProvider></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider></ClerkProvider>;
 }
 
 export default App;

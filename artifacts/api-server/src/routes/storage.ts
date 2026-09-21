@@ -2,10 +2,13 @@ import { Readable } from 'stream';
 import {
   RequestUploadUrlBody,
   RequestUploadUrlResponse,
+  RequestReviewImageUploadUrlBody,
+  RequestReviewImageUploadUrlResponse,
 } from '@workspace/api-zod';
 import { Router, type IRouter, type Request, type Response } from 'express';
 
 import { requireAdmin } from "../middlewares/adminAuth";
+import { getAuth } from "@clerk/express";
 import {
   ObjectNotFoundError,
   ObjectStorageService,
@@ -13,6 +16,15 @@ import {
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
+const REVIEW_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+
+async function requireCustomer(req: Request, res: Response): Promise<boolean> {
+  if (!getAuth(req).userId) {
+    res.status(401).json({ error: "Authentication required" });
+    return false;
+  }
+  return true;
+}
 
 /**
  * POST /storage/uploads/request-url
@@ -49,6 +61,31 @@ router.post(
     } catch (error) {
       req.log.error({ err: error }, 'Error generating upload URL');
       res.status(500).json({ error: 'Failed to generate upload URL' });
+    }
+  },
+);
+
+router.post(
+  "/storage/review-uploads/request-url",
+  async (req: Request, res: Response) => {
+    if (!(await requireCustomer(req, res))) return;
+    const candidate = req.body ?? {};
+    const parsed = RequestReviewImageUploadUrlBody.safeParse({
+      ...candidate,
+      contentType: typeof candidate.contentType === "string" ? candidate.contentType.toLowerCase() : candidate.contentType,
+    });
+    const { name, size, contentType } = parsed.success ? parsed.data : {};
+    if (!parsed.success || !Number.isSafeInteger(size) || !contentType || !REVIEW_IMAGE_TYPES.has(contentType)) {
+      res.status(400).json({ error: "Review images must be JPEG, PNG, WebP, or GIF and no larger than 10 MB" });
+      return;
+    }
+    try {
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      const objectPath = objectStorageService.normalizeObjectEntityPath(uploadURL);
+      res.json(RequestReviewImageUploadUrlResponse.parse({ uploadURL, objectPath, metadata: { name, size, contentType } }));
+    } catch (error) {
+      req.log.error({ err: error }, "Error generating review image upload URL");
+      res.status(500).json({ error: "Failed to generate upload URL" });
     }
   },
 );

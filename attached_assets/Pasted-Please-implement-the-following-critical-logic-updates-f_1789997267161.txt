@@ -1,0 +1,20 @@
+Please implement the following critical logic updates for Admin Security, Order Cancellations, and the Admin Dashboard structure:
+1. CRITICAL: Admin Security & Authentication
+⚬	Immediately remove the current Google OAuth/auto-login logic for the /admin route.
+⚬	The /admin route must be strictly protected by a standard Email and Password login screen.
+⚬	Hardcode or configure these exact credentials to bypass the login for the NGO owner: Email: mrudugandh.llp@gmail.com | and designer / editor :- athinamankar007@gmail.com Password: admin123.
+⚬	If anyone tries to access /admin without these credentials, redirect them instantly to the home page.
+2. Pre-Checkout Confirmation & Cancellation Flow
+⚬	When the user clicks to checkout, pop up a confirmation modal asking: 'Do you want to proceed to WhatsApp to confirm your order and make the payment?'
+⚬	Provide two buttons: 'Yes, Proceed to WhatsApp' (which triggers the WhatsApp URL redirect) and 'No, Cancel Order'.
+⚬	If they click 'No, Cancel Order', display a mandatory dropdown/text input asking for the 'Reason for Cancellation' (e.g., Ordered by mistake, Changed my mind, Testing). Save this reason to the database so the admin can see it.
+3. Post-Checkout Profile Cancellation
+⚬	In the Customer Profile's 'View My Orders' section, display the order status (defaulting to 'Pending').
+⚬	If the status is 'Pending', display a 'Cancel Order' button next to it.
+⚬	Clicking this button must require the user to input a 'Reason for Cancellation' before officially changing the status to 'Cancelled' in the database.
+4. Admin Panel Structure: 4-Tab Management Dashboard
+Redesign the Admin Dashboard interface into a clean, 4-tab sidebar navigation layout to organize operations:
+⚬	Tab 1 - Products (Inventory Management): Move all existing product and variant edit controls here. This must include the ability to add new products, edit prices, and upload variant-specific images (e.g., separate upload buttons for Single vs. Double sizes, or Junior vs. Senior Champ).
+⚬	Tab 2 - Orders (Order Management): Display a comprehensive list/table of all customer orders. Show the customer details, items ordered, and any 'Cancellation Reason' provided. Include a dropdown menu for the admin to manually update the Order Status (Pending, Confirmed, Dispatched, Cancelled). When updated here, it must immediately reflect on the customer's front-end profile.
+⚬	Tab 3 - Reviews (Feedback Management): Display a feed of all reviews and product photos submitted by customers. Include the reviewer's name, email, uploaded image, and message. Add an 'Admin Reply' field and a toggle to approve the review to be visible on the live website.
+⚬	Tab 4 - Settings (Security & Privacy): Create a secure account settings page. Add functional input fields for 'Update Admin Email ID' and 'Change Password'. This must update the authentication database so the current dummy email can be seamlessly swapped to the NGO co-founder's official email for handover."

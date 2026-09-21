@@ -269,6 +269,36 @@ export const RequestUploadUrlResponse = zod.object({
 
 
 /**
+ * @summary Request a presigned URL for an authenticated customer review image
+ */
+
+export const requestReviewImageUploadUrlBodySizeMax = 10485760;
+
+
+
+export const RequestReviewImageUploadUrlBody = zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number().int().min(1).max(requestReviewImageUploadUrlBodySizeMax),
+  "contentType": zod.enum(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+})
+
+
+
+
+
+
+export const RequestReviewImageUploadUrlResponse = zod.object({
+  "uploadURL": zod.string().url(),
+  "objectPath": zod.string(),
+  "metadata": zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number().int().min(1),
+  "contentType": zod.string().min(1)
+}).optional()
+})
+
+
+/**
  * @summary Serve a public asset
  */
 export const GetPublicObjectParams = zod.object({
@@ -286,5 +316,234 @@ export const GetStorageObjectParams = zod.object({
 })
 
 export const GetStorageObjectResponse = zod.unknown()
+
+
+export const listOrdersResponseTotalMin = 0;
+
+
+
+export const ListOrdersResponseItem = zod.object({
+  "id": zod.string(),
+  "userId": zod.string(),
+  "itemSnapshots": zod.array(zod.unknown()),
+  "fullName": zod.string(),
+  "phone": zod.string(),
+  "pin": zod.string(),
+  "address": zod.string(),
+  "total": zod.number().int().min(listOrdersResponseTotalMin),
+  "status": zod.enum(['Pending', 'Confirmed', 'Dispatched', 'Cancelled']),
+  "cancellationReason": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListOrdersResponse = zod.array(ListOrdersResponseItem)
+
+
+
+
+
+
+export const createOrderBodyTotalMin = 0;
+
+
+
+export const CreateOrderBody = zod.object({
+  "itemSnapshots": zod.array(zod.unknown()),
+  "fullName": zod.string().min(1),
+  "phone": zod.string().min(1),
+  "pin": zod.string().min(1),
+  "address": zod.string().min(1),
+  "total": zod.number().int().min(createOrderBodyTotalMin)
+})
+
+export const createOrderResponseTotalMin = 0;
+
+
+
+export const CreateOrderResponse = zod.object({
+  "id": zod.string(),
+  "userId": zod.string(),
+  "itemSnapshots": zod.array(zod.unknown()),
+  "fullName": zod.string(),
+  "phone": zod.string(),
+  "pin": zod.string(),
+  "address": zod.string(),
+  "total": zod.number().int().min(createOrderResponseTotalMin),
+  "status": zod.enum(['Pending', 'Confirmed', 'Dispatched', 'Cancelled']),
+  "cancellationReason": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const CancelOrderParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+
+export const CancelOrderBody = zod.object({
+  "cancellationReason": zod.string().min(1)
+})
+
+export const cancelOrderResponseTotalMin = 0;
+
+
+
+export const CancelOrderResponse = zod.object({
+  "id": zod.string(),
+  "userId": zod.string(),
+  "itemSnapshots": zod.array(zod.unknown()),
+  "fullName": zod.string(),
+  "phone": zod.string(),
+  "pin": zod.string(),
+  "address": zod.string(),
+  "total": zod.number().int().min(cancelOrderResponseTotalMin),
+  "status": zod.enum(['Pending', 'Confirmed', 'Dispatched', 'Cancelled']),
+  "cancellationReason": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const adminListOrdersResponseTotalMin = 0;
+
+
+
+export const AdminListOrdersResponseItem = zod.object({
+  "id": zod.string(),
+  "userId": zod.string(),
+  "itemSnapshots": zod.array(zod.unknown()),
+  "fullName": zod.string(),
+  "phone": zod.string(),
+  "pin": zod.string(),
+  "address": zod.string(),
+  "total": zod.number().int().min(adminListOrdersResponseTotalMin),
+  "status": zod.enum(['Pending', 'Confirmed', 'Dispatched', 'Cancelled']),
+  "cancellationReason": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const AdminListOrdersResponse = zod.array(AdminListOrdersResponseItem)
+
+
+export const AdminUpdateOrderParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const AdminUpdateOrderBody = zod.object({
+  "status": zod.enum(['Pending', 'Confirmed', 'Dispatched', 'Cancelled']),
+  "cancellationReason": zod.string().nullish()
+})
+
+export const adminUpdateOrderResponseTotalMin = 0;
+
+
+
+export const AdminUpdateOrderResponse = zod.object({
+  "id": zod.string(),
+  "userId": zod.string(),
+  "itemSnapshots": zod.array(zod.unknown()),
+  "fullName": zod.string(),
+  "phone": zod.string(),
+  "pin": zod.string(),
+  "address": zod.string(),
+  "total": zod.number().int().min(adminUpdateOrderResponseTotalMin),
+  "status": zod.enum(['Pending', 'Confirmed', 'Dispatched', 'Cancelled']),
+  "cancellationReason": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const ListReviewsResponseItem = zod.object({
+  "id": zod.string(),
+  "userId": zod.string(),
+  "reviewerName": zod.string(),
+  "reviewerEmail": zod.string(),
+  "message": zod.string(),
+  "imagePaths": zod.array(zod.string()),
+  "adminReply": zod.string().nullable(),
+  "approved": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListReviewsResponse = zod.array(ListReviewsResponseItem)
+
+
+
+
+
+export const CreateReviewBody = zod.object({
+  "message": zod.string().min(1),
+  "imagePaths": zod.array(zod.string()).optional()
+})
+
+export const CreateReviewResponse = zod.object({
+  "id": zod.string(),
+  "userId": zod.string(),
+  "reviewerName": zod.string(),
+  "reviewerEmail": zod.string(),
+  "message": zod.string(),
+  "imagePaths": zod.array(zod.string()),
+  "adminReply": zod.string().nullable(),
+  "approved": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const ListOwnReviewsResponseItem = zod.object({
+  "id": zod.string(),
+  "userId": zod.string(),
+  "reviewerName": zod.string(),
+  "reviewerEmail": zod.string(),
+  "message": zod.string(),
+  "imagePaths": zod.array(zod.string()),
+  "adminReply": zod.string().nullable(),
+  "approved": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListOwnReviewsResponse = zod.array(ListOwnReviewsResponseItem)
+
+
+export const AdminListReviewsResponseItem = zod.object({
+  "id": zod.string(),
+  "userId": zod.string(),
+  "reviewerName": zod.string(),
+  "reviewerEmail": zod.string(),
+  "message": zod.string(),
+  "imagePaths": zod.array(zod.string()),
+  "adminReply": zod.string().nullable(),
+  "approved": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const AdminListReviewsResponse = zod.array(AdminListReviewsResponseItem)
+
+
+export const AdminUpdateReviewParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const AdminUpdateReviewBody = zod.object({
+  "adminReply": zod.string().nullish(),
+  "approved": zod.boolean().optional()
+})
+
+export const AdminUpdateReviewResponse = zod.object({
+  "id": zod.string(),
+  "userId": zod.string(),
+  "reviewerName": zod.string(),
+  "reviewerEmail": zod.string(),
+  "message": zod.string(),
+  "imagePaths": zod.array(zod.string()),
+  "adminReply": zod.string().nullable(),
+  "approved": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
 
 

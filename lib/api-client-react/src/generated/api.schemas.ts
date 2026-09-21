@@ -5,6 +5,94 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
+
+
+export const OrderStatus = {
+  Pending: 'Pending',
+  Confirmed: 'Confirmed',
+  Dispatched: 'Dispatched',
+  Cancelled: 'Cancelled',
+} as const;
+
+export interface Order {
+  id: string;
+  userId: string;
+  itemSnapshots: unknown[];
+  fullName: string;
+  phone: string;
+  pin: string;
+  address: string;
+  /** @minimum 0 */
+  total: number;
+  status: OrderStatus;
+  /** @nullable */
+  cancellationReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderInput {
+  itemSnapshots: unknown[];
+  /** @minLength 1 */
+  fullName: string;
+  /** @minLength 1 */
+  phone: string;
+  /** @minLength 1 */
+  pin: string;
+  /** @minLength 1 */
+  address: string;
+  /** @minimum 0 */
+  total: number;
+}
+
+export interface CancelOrderInput {
+  /** @minLength 1 */
+  cancellationReason: string;
+}
+
+export type OrderUpdateStatus = typeof OrderUpdateStatus[keyof typeof OrderUpdateStatus];
+
+
+export const OrderUpdateStatus = {
+  Pending: 'Pending',
+  Confirmed: 'Confirmed',
+  Dispatched: 'Dispatched',
+  Cancelled: 'Cancelled',
+} as const;
+
+export interface OrderUpdate {
+  status: OrderUpdateStatus;
+  /** @nullable */
+  cancellationReason?: string | null;
+}
+
+export interface Review {
+  id: string;
+  userId: string;
+  reviewerName: string;
+  reviewerEmail: string;
+  message: string;
+  imagePaths: string[];
+  /** @nullable */
+  adminReply: string | null;
+  approved: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReviewInput {
+  /** @minLength 1 */
+  message: string;
+  imagePaths?: string[];
+}
+
+export interface ReviewUpdate {
+  /** @nullable */
+  adminReply?: string | null;
+  approved?: boolean;
+}
+
 export interface HealthStatus {
   status: string;
 }
@@ -80,6 +168,27 @@ export interface UploadUrlRequest {
   size: number;
   /** @minLength 1 */
   contentType: string;
+}
+
+export type ReviewImageUploadUrlRequestContentType = typeof ReviewImageUploadUrlRequestContentType[keyof typeof ReviewImageUploadUrlRequestContentType];
+
+
+export const ReviewImageUploadUrlRequestContentType = {
+  'image/jpeg': 'image/jpeg',
+  'image/png': 'image/png',
+  'image/webp': 'image/webp',
+  'image/gif': 'image/gif',
+} as const;
+
+export interface ReviewImageUploadUrlRequest {
+  /** @minLength 1 */
+  name: string;
+  /**
+     * @minimum 1
+     * @maximum 10485760
+     */
+  size: number;
+  contentType: ReviewImageUploadUrlRequestContentType;
 }
 
 export interface UploadUrlResponse {

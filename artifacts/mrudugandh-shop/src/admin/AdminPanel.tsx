@@ -1,16 +1,23 @@
 import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useUser } from "@clerk/react";
 import {
   getListProductsQueryKey,
   useCreateProduct,
   useDeleteProduct,
   useListProducts,
   useUpdateProduct,
+  useAdminListOrders,
+  useAdminUpdateOrder,
+  getAdminListOrdersQueryKey,
+  useAdminListReviews,
+  useAdminUpdateReview,
+  getAdminListReviewsQueryKey,
   type Product,
   type ProductVariant,
 } from "@workspace/api-client-react";
 import { useUpload } from "@workspace/object-storage-web";
-import { Check, ImagePlus, Pencil, Plus, Save, Trash2, X } from "lucide-react";
+import { Check, ImagePlus, Pencil, Plus, Save, Trash2, X, Package, MessageSquare, Settings } from "lucide-react";
 
 type Draft = {
   id?: string;
@@ -63,6 +70,55 @@ function imageUrl(path: string | null): string | null {
   return `/api/storage/objects/${path.replace(/^\/+/, "")}`;
 }
 
+const adminTabs = [
+  { id: "products", label: "Products", icon: Package },
+  { id: "orders", label: "Orders", icon: Package },
+  { id: "reviews", label: "Reviews", icon: MessageSquare },
+  { id: "settings", label: "Settings", icon: Settings },
+] as const;
+
+const getListReviewsQueryKey = getAdminListReviewsQueryKey;
+
+function OrdersTab() {
+  const queryClient = useQueryClient();
+  const orders = useAdminListOrders({ query: { queryKey: getAdminListOrdersQueryKey() } });
+  const update = useAdminUpdateOrder();
+  const [error, setError] = useState("");
+  if (orders.isLoading) return <p className="rounded-xl bg-[#e3f3f7] p-6 text-sm text-[#547080]">Loading orders…</p>;
+  if (orders.isError) return <p className="rounded-xl bg-[#fae5e1] p-6 text-sm text-[#a84e47]">Could not load orders. Please refresh.</p>;
+  return <div className="space-y-4">{error && <p className="rounded-xl bg-[#fae5e1] p-4 text-sm text-[#a84e47]">{error}</p>}{!orders.data?.length && <p className="rounded-xl border border-dashed border-[#9ecbd5] p-12 text-center text-sm text-[#6a8390]">No customer orders yet.</p>}{orders.data?.map((order) => <article key={order.id} className="rounded-2xl border border-[#cfe5ea] bg-white p-6">
+    <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#e4eff1] pb-4"><div><p className="font-bold text-[#173b61]">Order #{order.id.slice(0, 8)}</p><p className="mt-1 text-xs text-[#6a8390]">{new Date(order.createdAt).toLocaleString()}</p><p className="mt-2 text-sm text-[#547080]">{order.fullName} · {order.phone} · PIN {order.pin}</p><p className="text-sm text-[#547080]">{order.address}</p></div><select value={order.status} onChange={async (e) => { try { await update.mutateAsync({ id: order.id, data: { status: e.target.value as any, ...(e.target.value === "Cancelled" ? { cancellationReason: order.cancellationReason || "Cancelled by admin" } : {}) } }); await queryClient.invalidateQueries({ queryKey: getAdminListOrdersQueryKey() }); } catch (e) { setError(e instanceof Error ? e.message : "Could not update order."); } }} disabled={update.isPending} className="rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] px-3 py-2 text-sm font-bold text-[#173b61]"><option>Pending</option><option>Confirmed</option><option>Dispatched</option><option>Cancelled</option></select></div>
+    <div className="mt-4 space-y-2">{order.itemSnapshots.map((item: any, i) => <div key={i} className="flex justify-between text-sm text-[#547080]"><span>{item.name || item.productId}{item.variant ? ` · ${item.variant}` : ""} × {item.quantity}</span>{item.price ? <strong className="text-[#173b61]">₹{(item.price * item.quantity).toLocaleString("en-IN")}</strong> : null}</div>)}</div>
+    <div className="mt-4 flex flex-wrap justify-between gap-3 border-t border-[#e4eff1] pt-4 text-sm"><span className="font-bold text-[#173b61]">Total ₹{order.total.toLocaleString("en-IN")}</span>{order.cancellationReason && <span className="text-[#a84e47]">Cancellation reason: {order.cancellationReason}</span>}</div>
+  </article>)}</div>;
+}
+
+function ReviewsTab() {
+  const queryClient = useQueryClient();
+  const reviews = useAdminListReviews({ query: { queryKey: getAdminListReviewsQueryKey() } });
+  const update = useAdminUpdateReview();
+  const [replies, setReplies] = useState<Record<string, string>>({});
+  const [error, setError] = useState("");
+  if (reviews.isLoading) return <p className="rounded-xl bg-[#e3f3f7] p-6 text-sm text-[#547080]">Loading reviews…</p>;
+  if (reviews.isError) return <p className="rounded-xl bg-[#fae5e1] p-6 text-sm text-[#a84e47]">Could not load reviews.</p>;
+  return <div className="space-y-4">{error && <p className="rounded-xl bg-[#fae5e1] p-4 text-sm text-[#a84e47]">{error}</p>}{!reviews.data?.length && <p className="rounded-xl border border-dashed border-[#9ecbd5] p-12 text-center text-sm text-[#6a8390]">No reviews submitted yet.</p>}{reviews.data?.map((review) => <article key={review.id} className="rounded-2xl border border-[#cfe5ea] bg-white p-6"><div className="flex flex-wrap justify-between gap-3"><div><h3 className="font-bold text-[#173b61]">{review.reviewerName}</h3><p className="text-xs text-[#6a8390]">{review.reviewerEmail} · {new Date(review.createdAt).toLocaleDateString()}</p></div><label className="flex items-center gap-2 text-sm font-semibold text-[#31516a]"><input type="checkbox" checked={review.approved} disabled={update.isPending} onChange={async (e) => { try { await update.mutateAsync({ id: review.id, data: { approved: e.target.checked } }); await queryClient.invalidateQueries({ queryKey: getListReviewsQueryKey() }); } catch (err) { setError(err instanceof Error ? err.message : "Could not update review."); } }} className="h-4 w-4 accent-[#1688c6]" /> Approved</label></div><p className="mt-4 leading-7 text-[#547080]">{review.message}</p>{review.imagePaths.length > 0 && <div className="mt-4 flex gap-2 overflow-x-auto">{review.imagePaths.map((path) => <img key={path} src={imageUrl(path) || path} alt="Customer purchase" className="h-20 w-20 rounded-lg object-cover" />)}</div>}<div className="mt-5 flex gap-3"><input value={replies[review.id] ?? review.adminReply ?? ""} onChange={(e) => setReplies({ ...replies, [review.id]: e.target.value })} placeholder="Write an admin reply" className="min-w-0 flex-1 rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] px-3 py-2 text-sm" /><button disabled={update.isPending} onClick={async () => { try { await update.mutateAsync({ id: review.id, data: { adminReply: replies[review.id] ?? review.adminReply ?? "" } }); await queryClient.invalidateQueries({ queryKey: getListReviewsQueryKey() }); } catch (err) { setError(err instanceof Error ? err.message : "Could not save reply."); } }} className="rounded-full bg-[#1688c6] px-4 py-2 text-xs font-bold text-white">Save reply</button></div></article>)}</div>;
+}
+
+function SettingsTab() {
+  const { user } = useUser();
+  const [email, setEmail] = useState(user?.primaryEmailAddress?.emailAddress ?? "");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [pendingEmailId, setPendingEmailId] = useState<string | null>(null);
+  const saveEmail = async (event: FormEvent) => { event.preventDefault(); setMessage(""); setError(""); try { if (!email.trim()) throw new Error("Enter a valid email address."); if (email.trim().toLowerCase() !== "athinamankar007@gmail.com" && email.trim().toLowerCase() !== "mrudugandh.llp@gmail.com") { throw new Error("Changing an email outside the approved allowlist requires backend allowlist handover. No change was made."); } if (!user) throw new Error("Admin user is not available."); const created = await user.createEmailAddress({ email }); await created.prepareVerification({ strategy: "email_code" }); setPendingEmailId(created.id); setMessage("Verification code sent. Enter it below to confirm this address."); } catch (e) { setError(e instanceof Error ? e.message : "Could not update email."); } };
+  const verifyEmail = async (event: FormEvent) => { event.preventDefault(); setMessage(""); setError(""); try { if (!user || !pendingEmailId || !verificationCode.trim()) throw new Error("Enter the verification code."); const address = user.emailAddresses.find((item) => item.id === pendingEmailId); if (!address) throw new Error("Verification request expired. Send a new code."); await address.attemptVerification({ code: verificationCode.trim() }); await user.update({ primaryEmailAddressId: address.id }); await user.reload(); setEmail(user.primaryEmailAddress?.emailAddress ?? email); setPendingEmailId(null); setVerificationCode(""); setMessage("Email verified and made primary."); } catch (e) { setError(e instanceof Error ? e.message : "Verification failed. Check the code and try again."); } };
+  const savePassword = async (event: FormEvent) => { event.preventDefault(); setMessage(""); setError(""); try { if (!currentPassword || !newPassword) throw new Error("Enter your current password and a new password."); if (newPassword.length < 8) throw new Error("New password must be at least 8 characters."); if (!user) throw new Error("Admin user is not available."); await user.updatePassword({ currentPassword, newPassword }); setCurrentPassword(""); setNewPassword(""); setMessage("Password changed securely through Clerk."); } catch (e) { setError(e instanceof Error ? e.message : "Could not change password. Check your current password."); } };
+  return <div className="max-w-2xl space-y-8"><p className="text-sm text-[#547080]">Admin account security is managed by Clerk. Passwords are never stored by this app.</p>{message && <p className="rounded-xl bg-[#e4f5ed] p-4 text-sm text-[#287552]">{message}</p>}{error && <p className="rounded-xl bg-[#fae5e1] p-4 text-sm text-[#a84e47]">{error}</p>}<form onSubmit={saveEmail} className="rounded-2xl border border-[#cfe5ea] bg-white p-6"><h2 className="font-display text-2xl text-[#173b61]">Update admin email</h2><p className="mt-2 text-xs text-[#6a8390]">Approved addresses: mrudugandh.llp@gmail.com and athinamankar007@gmail.com.</p><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-5 w-full rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] px-3 py-3 text-sm" /><button className="mt-4 rounded-full bg-[#1688c6] px-5 py-3 text-sm font-bold text-white">Send verification</button></form>{pendingEmailId && <form onSubmit={verifyEmail} className="rounded-2xl border border-[#9bcbd8] bg-[#f7fcfc] p-6"><h3 className="font-display text-xl text-[#173b61]">Verify new email</h3><p className="mt-2 text-xs text-[#6a8390]">Enter the code Clerk sent to the new address.</p><input required inputMode="numeric" autoComplete="one-time-code" value={verificationCode} onChange={(e) => setVerificationCode(e.target.value)} placeholder="Verification code" className="mt-4 w-full rounded-xl border border-[#cfe5ea] bg-white px-3 py-3 text-sm" /><button className="mt-4 rounded-full bg-[#1688c6] px-5 py-3 text-sm font-bold text-white">Verify and make primary</button></form>}<form onSubmit={savePassword} className="rounded-2xl border border-[#cfe5ea] bg-white p-6"><h2 className="font-display text-2xl text-[#173b61]">Change password</h2><input type="password" required autoComplete="current-password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Current password" className="mt-5 w-full rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] px-3 py-3 text-sm" /><input type="password" required autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New password (8+ characters)" className="mt-3 w-full rounded-xl border border-[#cfe5ea] bg-[#f7fcfc] px-3 py-3 text-sm" /><button className="mt-4 rounded-full bg-[#173b61] px-5 py-3 text-sm font-bold text-white">Change password</button></form></div>;
+}
+
 export default function AdminPanel() {
   const queryClient = useQueryClient();
   const productsQuery = useListProducts();
@@ -73,6 +129,7 @@ export default function AdminPanel() {
   const [draft, setDraft] = useState<Draft>(() => ({ ...emptyDraft, variants: [] }));
   const [notice, setNotice] = useState("");
   const [formError, setFormError] = useState("");
+  const [activeTab, setActiveTab] = useState<(typeof adminTabs)[number]["id"]>("products");
 
   const selectedProduct = useMemo(
     () => productsQuery.data?.find((product) => product.id === selectedId),
@@ -220,7 +277,12 @@ export default function AdminPanel() {
       {productsQuery.isError && <p className="mb-5 rounded-xl bg-[#fae5e1] p-4 text-sm text-[#a84e47]">Could not load products. Your account may not have admin access.</p>}
       {notice && <p className="mb-5 flex items-center gap-2 rounded-xl bg-[#e4f5ed] p-4 text-sm text-[#287552]"><Check size={16} /> {notice}</p>}
 
-      <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
+      <div className="grid gap-8 lg:grid-cols-[220px_1fr]">
+        <aside className="h-fit rounded-2xl border border-[#cfe5ea] bg-white p-3">
+          <p className="px-3 pb-3 pt-2 text-xs font-bold uppercase tracking-[.16em] text-[#6a8390]">Dashboard</p>
+          <div className="space-y-1">{adminTabs.map(({ id, label, icon: Icon }) => <button key={id} type="button" onClick={() => setActiveTab(id)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-bold ${activeTab === id ? "bg-[#e3f3f7] text-[#1688c6]" : "text-[#547080] hover:bg-[#f5fbfc]"}`}><Icon size={17} />{label}</button>)}</div>
+        </aside>
+        {activeTab === "orders" ? <OrdersTab /> : activeTab === "reviews" ? <ReviewsTab /> : activeTab === "settings" ? <SettingsTab /> : <>
         <aside className="h-fit rounded-2xl border border-[#cfe5ea] bg-white p-3">
           <p className="px-3 pb-3 pt-2 text-xs font-bold uppercase tracking-[.16em] text-[#6a8390]">{products.length} products</p>
           <div className="space-y-4">
@@ -313,6 +375,7 @@ export default function AdminPanel() {
           <label className="mt-6 flex items-center gap-3 text-sm font-semibold text-[#31516a]"><input type="checkbox" checked={draft.available} onChange={(event) => setDraft({ ...draft, available: event.target.checked })} className="h-4 w-4 accent-[#1688c6]" /> Show this product in the shop</label>
           <button disabled={busy || isUploading} type="submit" className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#1688c6] px-6 py-3.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"><Save size={16} /> {busy ? "Saving..." : "Save product"}</button>
         </form>
+        </>}
       </div>
     </div>
   );
