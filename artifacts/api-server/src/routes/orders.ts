@@ -1,16 +1,15 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { Router, type IRouter, type Request } from "express";
 import { getAuth } from "@clerk/express";
-import { db, ordersTable } from "@workspace/db";
+import { db, ordersTable, productsTable, type OrderItem } from "@workspace/db";
 import { CreateOrderBody, CancelOrderBody, AdminUpdateOrderBody } from "@workspace/api-zod";
 import { requireAdmin } from "../middlewares/adminAuth";
 
 const router: IRouter = Router();
-const statuses = ["Pending", "Confirmed", "Dispatched", "Cancelled"] as const;
-
 function userId(req: Request): string | null {
-  return getAuth(req).userId;
+  const auth = getAuth(req);
+  return auth.sessionClaims?.userId as string | undefined ?? auth.userId;
 }
 function requireUser(req: any, res: any): string | null {
   const id = userId(req);
@@ -21,12 +20,43 @@ function requireUser(req: any, res: any): string | null {
 router.post("/orders", async (req, res): Promise<void> => {
   const uid = requireUser(req, res);
   if (!uid) return;
-  const parsed = CreateOrderBody.safeParse({ ...req.body, itemSnapshots: req.body.itemSnapshots ?? req.body.items });
+  const parsed = CreateOrderBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+  const productIds = [...new Set(parsed.data.items.map((item) => item.productId))];
+  const products = await db.select().from(productsTable).where(inArray(productsTable.id, productIds));
+  const productMap = new Map(products.map((product) => [product.id, product]));
+  const itemSnapshots: OrderItem[] = [];
+  for (const requestedItem of parsed.data.items) {
+    const product = productMap.get(requestedItem.productId);
+    if (!product || !product.available) {
+      res.status(400).json({ error: "One or more products are unavailable" });
+      return;
+    }
+    const variant = requestedItem.variant
+      ? product.variants.find((entry) => entry.label === requestedItem.variant)
+      : undefined;
+    if (requestedItem.variant && !variant) {
+      res.status(400).json({ error: "One or more product variants are invalid" });
+      return;
+    }
+    itemSnapshots.push({
+      productId: product.id,
+      name: product.name,
+      variant: variant?.label ?? null,
+      quantity: requestedItem.quantity,
+      price: variant?.price ?? product.price,
+    });
+  }
+  const subtotal = itemSnapshots.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const shipping = subtotal >= 2999 ? 0 : 100;
+  const id = randomUUID();
   const [order] = await db.insert(ordersTable).values({
-    id: randomUUID(), userId: uid, itemSnapshots: parsed.data.itemSnapshots,
+    id,
+    number: `MRD-${id.replaceAll("-", "").slice(0, 7).toUpperCase()}`,
+    userId: uid,
+    itemSnapshots,
     fullName: parsed.data.fullName, phone: parsed.data.phone, pin: parsed.data.pin,
-    address: parsed.data.address, total: parsed.data.total,
+    address: parsed.data.address, subtotal, shipping, total: subtotal + shipping,
   }).returning();
   res.status(201).json(order);
 });

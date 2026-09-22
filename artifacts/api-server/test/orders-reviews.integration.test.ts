@@ -2,8 +2,12 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 
 type Row = Record<string, any>;
 const state = vi.hoisted(() => ({
-  rows: { orders: [] as Row[], reviews: [] as Row[] },
-  tables: { orders: { id: "id", userId: "userId", status: "status", approved: "approved", createdAt: "createdAt" }, reviews: { id: "id", userId: "userId", approved: "approved", createdAt: "createdAt" } },
+  rows: { orders: [] as Row[], reviews: [] as Row[], products: [] as Row[] },
+  tables: {
+    orders: { id: "id", userId: "userId", status: "status", approved: "approved", createdAt: "createdAt" },
+    reviews: { id: "id", userId: "userId", approved: "approved", createdAt: "createdAt" },
+    products: { id: "id" },
+  },
 }));
 
 vi.mock("@clerk/express", () => ({
@@ -16,24 +20,25 @@ vi.mock("drizzle-orm", () => ({
   and: (...conditions: any[]) => conditions,
   or: (...conditions: any[]) => ({ or: conditions }),
   desc: (column: string) => ({ column }),
+  inArray: (column: string, values: any[]) => ({ column, values }),
 }));
 vi.mock("@workspace/db", () => {
   const match = (row: Row, condition: any): boolean => {
     if (Array.isArray(condition)) return condition.every((c) => match(row, c));
     if (condition?.or) return condition.or.some((c: any) => match(row, c));
-    return !condition || row[condition.column] === condition.value;
+    return !condition || (condition.values ? condition.values.includes(row[condition.column]) : row[condition.column] === condition.value);
   };
-  const table = (name: "orders" | "reviews") => state.tables[name];
-  const rows = (name: "orders" | "reviews") => state.rows[name];
+  const table = (name: "orders" | "reviews" | "products") => state.tables[name];
+  const rows = (name: "orders" | "reviews" | "products") => state.rows[name];
   return {
-    ordersTable: table("orders"), reviewsTable: table("reviews"), productsTable: {},
+    ordersTable: table("orders"), reviewsTable: table("reviews"), productsTable: table("products"),
     db: {
       insert: () => {
         let values: any;
         return { values(v: any) { values = v; return this; }, returning: async () => { const list = Array.isArray(values) ? values : [values]; const target = values.userId !== undefined && values.message === undefined ? rows("orders") : rows("reviews"); for (const item of list) { if (target === rows("orders")) item.status ??= "Pending"; else { item.approved ??= false; item.adminReply ??= null; } } target.push(...list); return list; } };
       },
       select: () => ({ from: (t: any) => {
-        const name = t === state.tables.orders ? "orders" : "reviews";
+        const name = t === state.tables.orders ? "orders" : t === state.tables.products ? "products" : "reviews";
         let condition: any;
         const filtered = () => rows(name).filter((r) => match(r, condition));
         return {
@@ -57,11 +62,17 @@ async function request(path: string, init: RequestInit = {}) {
   return { response, body: await response.json() };
 }
 const asUser = (id: string, init: RequestInit = {}): RequestInit => ({ ...init, headers: { ...(init.headers ?? {}), "x-test-user-id": id } });
-const order = { itemSnapshots: [{ id: "p1", name: "Product", price: 100, quantity: 1 }], fullName: "A Customer", phone: "123", pin: "123456", address: "Address", total: 100 };
+const order = { items: [{ productId: "p1", quantity: 2 }], fullName: "A Customer", phone: "123", pin: "123456", address: "Address" };
 
 describe("customer orders and reviews integration", () => {
   beforeAll(async () => { process.env.ADMIN_EMAILS = "admin@example.com"; await new Promise<void>((resolve) => { server = app.listen(0, "127.0.0.1", resolve); }); const address = server.address() as any; baseUrl = `http://127.0.0.1:${address.port}`; });
-  beforeEach(() => { state.rows.orders.length = 0; state.rows.reviews.length = 0; });
+  beforeEach(() => {
+    state.rows.orders.length = 0;
+    state.rows.reviews.length = 0;
+    state.rows.products.splice(0, state.rows.products.length, {
+      id: "p1", name: "Product", price: 100, variants: [], available: true,
+    });
+  });
   afterAll(() => server.close());
 
   it("rejects unauthenticated order, review, and upload requests", async () => {
@@ -73,6 +84,7 @@ describe("customer orders and reviews integration", () => {
   it("creates own orders, isolates users, and enforces cancellation rules", async () => {
     const created = await request("/api/orders", asUser("alice", { method: "POST", body: JSON.stringify(order) }));
     expect(created.response.status).toBe(201);
+    expect(created.body).toMatchObject({ subtotal: 200, shipping: 100, total: 300 });
     expect((await request("/api/orders", asUser("alice"))).body).toHaveLength(1);
     expect((await request("/api/orders", asUser("bob"))).body).toHaveLength(0);
     expect((await request(`/api/orders/${created.body.id}/cancel`, asUser("alice", { method: "POST", body: "{}" }))).response.status).toBe(400);

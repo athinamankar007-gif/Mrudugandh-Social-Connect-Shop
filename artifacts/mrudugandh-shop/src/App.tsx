@@ -3,7 +3,6 @@ import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/reac
 import { ClerkProvider, Show, SignIn, SignUp, useUser, useAuth, UserButton, useClerk } from '@clerk/react';
 import { shadcn } from '@clerk/themes';
 import { useListProducts, useListOrders, useCreateOrder, useCancelOrder, getListOrdersQueryKey, requestReviewImageUploadUrl, useCreateReview, getListReviewsQueryKey, type Product as ApiProduct } from '@workspace/api-client-react';
-import { setAuthTokenGetter } from '@workspace/api-client-react';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -451,16 +450,16 @@ function Checkout() {
           phone: data.mobile,
           pin: data.pin,
           address: data.address,
-          total: data.totalAmount,
-          itemSnapshots: cart.map((line) => {
-            const p = products.find((item) => item.id === line.productId);
-            return { productId: line.productId, name: p?.name ?? 'Item', variant: line.variant?.label ?? null, quantity: line.quantity, price: line.variant?.price ?? p?.price ?? 0 };
-          }),
+          items: cart.map((line) => ({
+            productId: line.productId,
+            variant: line.variant?.label ?? null,
+            quantity: line.quantity,
+          })),
         },
       });
       if (order) setPersistedOrderId(order.id);
       whatsappWindow.location.href = data.url;
-      localStorage.setItem('mrudugandh-order', JSON.stringify({ number: order?.id ?? persistedOrderId, total: data.totalAmount }));
+      localStorage.setItem('mrudugandh-order', JSON.stringify({ number: order?.number ?? persistedOrderId, total: order?.total ?? data.totalAmount }));
       clear();
       setPendingCheckout(null);
       setShowDecision(false);
@@ -481,8 +480,8 @@ function Checkout() {
     try {
       const created = persistedOrderId ? { id: persistedOrderId } : await createOrder.mutateAsync({
         data: {
-          fullName: data.name, phone: data.mobile, pin: data.pin, address: data.address, total: data.totalAmount,
-          itemSnapshots: cart.map((line) => ({ productId: line.productId, variant: line.variant?.label ?? null, quantity: line.quantity })),
+          fullName: data.name, phone: data.mobile, pin: data.pin, address: data.address,
+          items: cart.map((line) => ({ productId: line.productId, variant: line.variant?.label ?? null, quantity: line.quantity })),
         },
       });
       await cancelOrder.mutateAsync({ id: created.id, data: { cancellationReason: reason } });
@@ -661,9 +660,9 @@ function SignUpPage() {
 }
 
 function Account() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const { isSignedIn } = useAuth();
-  const ordersQuery = useListOrders({ query: { queryKey: getListOrdersQueryKey(), enabled: Boolean(isSignedIn) } });
+  const ordersQuery = useListOrders({ query: { queryKey: [...getListOrdersQueryKey(), user?.id], enabled: isLoaded && Boolean(isSignedIn) } });
   const cancelOrder = useCancelOrder();
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
   const [reason, setReason] = useState('');
@@ -686,7 +685,7 @@ function Account() {
       <h2 className="mb-6 font-display text-3xl text-[#173b61]">Order History</h2>
       {ordersQuery.isLoading ? <CatalogMessage title="Loading your orders…" copy="Fetching your order history." /> : ordersQuery.isError ? <CatalogMessage title="Orders unavailable" copy="Please refresh and try again." /> : ordersQuery.data?.length ? <div className="space-y-4">{ordersQuery.data.map((order) => <div key={order.id} className="rounded-2xl border border-[#cfe5ea] bg-white p-6 sm:p-8">
         <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#cfe5ea] pb-6">
-          <div><p className="text-sm font-bold text-[#1688c6]">Order #{order.id.slice(0, 8)}</p><p className="mt-1 text-xs text-[#6a8390]">{new Date(order.createdAt).toLocaleDateString()}</p></div>
+          <div><p className="text-sm font-bold text-[#1688c6]">Order #{order.number}</p><p className="mt-1 text-xs text-[#6a8390]">{new Date(order.createdAt).toLocaleDateString()}</p></div>
           <div className="text-right"><p className="font-display text-xl text-[#173b61]">{money(order.total)}</p><span className={`mt-1 inline-block rounded-full px-3 py-1 text-xs font-bold ${order.status === 'Cancelled' ? 'bg-[#fae5e1] text-[#a84e47]' : 'bg-[#e3f3f7] text-[#1688c6]'}`}>{order.status || 'Pending'}</span></div>
         </div>
         <div className="mt-6 space-y-3">{order.itemSnapshots.map((item: any, i) => <div key={i} className="flex justify-between text-sm"><span className="text-[#547080]">{item.name || item.productId} {item.variant ? `· ${item.variant}` : ''} × {item.quantity}</span><span className="text-[#173b61]">{item.price ? money(item.price * item.quantity) : ''}</span></div>)}</div>
@@ -886,18 +885,9 @@ function Router() {
   return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route path="/shop" component={Shop} /><Route path="/product/:id" component={ProductDetail} /><Route path="/about" component={About} /><Route path="/impact" component={Impact} /><Route path="/initiatives" component={Initiatives} /><Route path="/contact" component={Contact} /><Route path="/cart" component={Cart} /><Route path="/checkout" component={Checkout} /><Route path="/order-confirmation" component={Confirmation} /><Route path="/account" component={Account} /><Route path="/admin" component={Admin} /><Route path="/admin/sign-in" component={AdminSignInPage} /><Route path="/admin/sign-in/:rest*" component={AdminSignInPage} /><Route path="/sign-in" component={SignInPage} /><Route path="/sign-in/:rest*" component={SignInPage} /><Route path="/sign-up" component={SignUpPage} /><Route path="/sign-up/:rest*" component={SignUpPage} /><Route component={NotFound} /></Switch></ErrorBoundary>;
 }
 
-function ApiAuthBridge() {
-  const { getToken } = useAuth();
-  useEffect(() => {
-    setAuthTokenGetter(() => getToken());
-    return () => setAuthTokenGetter(null);
-  }, [getToken]);
-  return null;
-}
-
 const queryClient = new QueryClient();
 function App() {
-  return <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY} appearance={{ theme: shadcn }}><ApiAuthBridge /><QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><ProductsProvider><CartProvider><Router /></CartProvider></ProductsProvider></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider></ClerkProvider>;
+  return <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY} appearance={{ theme: shadcn }}><QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><ProductsProvider><CartProvider><Router /></CartProvider></ProductsProvider></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider></ClerkProvider>;
 }
 
 export default App;

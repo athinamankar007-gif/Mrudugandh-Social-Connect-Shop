@@ -15,14 +15,30 @@ export const OrderStatus = {
   Cancelled: 'Cancelled',
 } as const;
 
+export interface OrderItem {
+  productId: string;
+  name: string;
+  /** @nullable */
+  variant: string | null;
+  /** @minimum 1 */
+  quantity: number;
+  /** @minimum 0 */
+  price: number;
+}
+
 export interface Order {
   id: string;
+  number: string;
   userId: string;
-  itemSnapshots: unknown[];
+  itemSnapshots: OrderItem[];
   fullName: string;
   phone: string;
   pin: string;
   address: string;
+  /** @minimum 0 */
+  subtotal: number;
+  /** @minimum 0 */
+  shipping: number;
   /** @minimum 0 */
   total: number;
   status: OrderStatus;
@@ -32,8 +48,18 @@ export interface Order {
   updatedAt: string;
 }
 
+export interface OrderItemInput {
+  /** @minLength 1 */
+  productId: string;
+  /** @nullable */
+  variant?: string | null;
+  /** @minimum 1 */
+  quantity: number;
+}
+
 export interface OrderInput {
-  itemSnapshots: unknown[];
+  /** @minItems 1 */
+  items: OrderItemInput[];
   /** @minLength 1 */
   fullName: string;
   /** @minLength 1 */
@@ -42,8 +68,6 @@ export interface OrderInput {
   pin: string;
   /** @minLength 1 */
   address: string;
-  /** @minimum 0 */
-  total: number;
 }
 
 export interface CancelOrderInput {

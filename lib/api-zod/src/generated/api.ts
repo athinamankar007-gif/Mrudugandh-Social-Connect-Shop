@@ -318,18 +318,34 @@ export const GetStorageObjectParams = zod.object({
 export const GetStorageObjectResponse = zod.unknown()
 
 
+
+export const listOrdersResponseItemSnapshotsItemPriceMin = 0;
+
+export const listOrdersResponseSubtotalMin = 0;
+
+export const listOrdersResponseShippingMin = 0;
+
 export const listOrdersResponseTotalMin = 0;
 
 
 
 export const ListOrdersResponseItem = zod.object({
   "id": zod.string(),
+  "number": zod.string(),
   "userId": zod.string(),
-  "itemSnapshots": zod.array(zod.unknown()),
+  "itemSnapshots": zod.array(zod.object({
+  "productId": zod.string(),
+  "name": zod.string(),
+  "variant": zod.string().nullable(),
+  "quantity": zod.number().int().min(1),
+  "price": zod.number().int().min(listOrdersResponseItemSnapshotsItemPriceMin)
+})),
   "fullName": zod.string(),
   "phone": zod.string(),
   "pin": zod.string(),
   "address": zod.string(),
+  "subtotal": zod.number().int().min(listOrdersResponseSubtotalMin),
+  "shipping": zod.number().int().min(listOrdersResponseShippingMin),
   "total": zod.number().int().min(listOrdersResponseTotalMin),
   "status": zod.enum(['Pending', 'Confirmed', 'Dispatched', 'Cancelled']),
   "cancellationReason": zod.string().nullable(),
@@ -343,18 +359,29 @@ export const ListOrdersResponse = zod.array(ListOrdersResponseItem)
 
 
 
-export const createOrderBodyTotalMin = 0;
+
+
 
 
 
 export const CreateOrderBody = zod.object({
-  "itemSnapshots": zod.array(zod.unknown()),
+  "items": zod.array(zod.object({
+  "productId": zod.string().min(1),
+  "variant": zod.string().nullish(),
+  "quantity": zod.number().int().min(1)
+})).min(1),
   "fullName": zod.string().min(1),
   "phone": zod.string().min(1),
   "pin": zod.string().min(1),
-  "address": zod.string().min(1),
-  "total": zod.number().int().min(createOrderBodyTotalMin)
+  "address": zod.string().min(1)
 })
+
+
+export const createOrderResponseItemSnapshotsItemPriceMin = 0;
+
+export const createOrderResponseSubtotalMin = 0;
+
+export const createOrderResponseShippingMin = 0;
 
 export const createOrderResponseTotalMin = 0;
 
@@ -362,12 +389,21 @@ export const createOrderResponseTotalMin = 0;
 
 export const CreateOrderResponse = zod.object({
   "id": zod.string(),
+  "number": zod.string(),
   "userId": zod.string(),
-  "itemSnapshots": zod.array(zod.unknown()),
+  "itemSnapshots": zod.array(zod.object({
+  "productId": zod.string(),
+  "name": zod.string(),
+  "variant": zod.string().nullable(),
+  "quantity": zod.number().int().min(1),
+  "price": zod.number().int().min(createOrderResponseItemSnapshotsItemPriceMin)
+})),
   "fullName": zod.string(),
   "phone": zod.string(),
   "pin": zod.string(),
   "address": zod.string(),
+  "subtotal": zod.number().int().min(createOrderResponseSubtotalMin),
+  "shipping": zod.number().int().min(createOrderResponseShippingMin),
   "total": zod.number().int().min(createOrderResponseTotalMin),
   "status": zod.enum(['Pending', 'Confirmed', 'Dispatched', 'Cancelled']),
   "cancellationReason": zod.string().nullable(),
@@ -387,18 +423,34 @@ export const CancelOrderBody = zod.object({
   "cancellationReason": zod.string().min(1)
 })
 
+
+export const cancelOrderResponseItemSnapshotsItemPriceMin = 0;
+
+export const cancelOrderResponseSubtotalMin = 0;
+
+export const cancelOrderResponseShippingMin = 0;
+
 export const cancelOrderResponseTotalMin = 0;
 
 
 
 export const CancelOrderResponse = zod.object({
   "id": zod.string(),
+  "number": zod.string(),
   "userId": zod.string(),
-  "itemSnapshots": zod.array(zod.unknown()),
+  "itemSnapshots": zod.array(zod.object({
+  "productId": zod.string(),
+  "name": zod.string(),
+  "variant": zod.string().nullable(),
+  "quantity": zod.number().int().min(1),
+  "price": zod.number().int().min(cancelOrderResponseItemSnapshotsItemPriceMin)
+})),
   "fullName": zod.string(),
   "phone": zod.string(),
   "pin": zod.string(),
   "address": zod.string(),
+  "subtotal": zod.number().int().min(cancelOrderResponseSubtotalMin),
+  "shipping": zod.number().int().min(cancelOrderResponseShippingMin),
   "total": zod.number().int().min(cancelOrderResponseTotalMin),
   "status": zod.enum(['Pending', 'Confirmed', 'Dispatched', 'Cancelled']),
   "cancellationReason": zod.string().nullable(),
@@ -407,18 +459,34 @@ export const CancelOrderResponse = zod.object({
 })
 
 
+
+export const adminListOrdersResponseItemSnapshotsItemPriceMin = 0;
+
+export const adminListOrdersResponseSubtotalMin = 0;
+
+export const adminListOrdersResponseShippingMin = 0;
+
 export const adminListOrdersResponseTotalMin = 0;
 
 
 
 export const AdminListOrdersResponseItem = zod.object({
   "id": zod.string(),
+  "number": zod.string(),
   "userId": zod.string(),
-  "itemSnapshots": zod.array(zod.unknown()),
+  "itemSnapshots": zod.array(zod.object({
+  "productId": zod.string(),
+  "name": zod.string(),
+  "variant": zod.string().nullable(),
+  "quantity": zod.number().int().min(1),
+  "price": zod.number().int().min(adminListOrdersResponseItemSnapshotsItemPriceMin)
+})),
   "fullName": zod.string(),
   "phone": zod.string(),
   "pin": zod.string(),
   "address": zod.string(),
+  "subtotal": zod.number().int().min(adminListOrdersResponseSubtotalMin),
+  "shipping": zod.number().int().min(adminListOrdersResponseShippingMin),
   "total": zod.number().int().min(adminListOrdersResponseTotalMin),
   "status": zod.enum(['Pending', 'Confirmed', 'Dispatched', 'Cancelled']),
   "cancellationReason": zod.string().nullable(),
@@ -437,18 +505,34 @@ export const AdminUpdateOrderBody = zod.object({
   "cancellationReason": zod.string().nullish()
 })
 
+
+export const adminUpdateOrderResponseItemSnapshotsItemPriceMin = 0;
+
+export const adminUpdateOrderResponseSubtotalMin = 0;
+
+export const adminUpdateOrderResponseShippingMin = 0;
+
 export const adminUpdateOrderResponseTotalMin = 0;
 
 
 
 export const AdminUpdateOrderResponse = zod.object({
   "id": zod.string(),
+  "number": zod.string(),
   "userId": zod.string(),
-  "itemSnapshots": zod.array(zod.unknown()),
+  "itemSnapshots": zod.array(zod.object({
+  "productId": zod.string(),
+  "name": zod.string(),
+  "variant": zod.string().nullable(),
+  "quantity": zod.number().int().min(1),
+  "price": zod.number().int().min(adminUpdateOrderResponseItemSnapshotsItemPriceMin)
+})),
   "fullName": zod.string(),
   "phone": zod.string(),
   "pin": zod.string(),
   "address": zod.string(),
+  "subtotal": zod.number().int().min(adminUpdateOrderResponseSubtotalMin),
+  "shipping": zod.number().int().min(adminUpdateOrderResponseShippingMin),
   "total": zod.number().int().min(adminUpdateOrderResponseTotalMin),
   "status": zod.enum(['Pending', 'Confirmed', 'Dispatched', 'Cancelled']),
   "cancellationReason": zod.string().nullable(),

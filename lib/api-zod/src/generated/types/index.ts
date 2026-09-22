@@ -11,6 +11,8 @@ export * from './errorEnvelope';
 export * from './healthStatus';
 export * from './order';
 export * from './orderInput';
+export * from './orderItem';
+export * from './orderItemInput';
 export * from './orderStatus';
 export * from './orderUpdate';
 export * from './orderUpdateStatus';

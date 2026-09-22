@@ -5,9 +5,11 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { OrderItemInput } from './orderItemInput';
 
 export interface OrderInput {
-  itemSnapshots: unknown[];
+  /** @minItems 1 */
+  items: OrderItemInput[];
   /** @minLength 1 */
   fullName: string;
   /** @minLength 1 */
@@ -16,6 +18,4 @@ export interface OrderInput {
   pin: string;
   /** @minLength 1 */
   address: string;
-  /** @minimum 0 */
-  total: number;
 }

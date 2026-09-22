@@ -5,16 +5,22 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { OrderItem } from './orderItem';
 import type { OrderStatus } from './orderStatus';
 
 export interface Order {
   id: string;
+  number: string;
   userId: string;
-  itemSnapshots: unknown[];
+  itemSnapshots: OrderItem[];
   fullName: string;
   phone: string;
   pin: string;
   address: string;
+  /** @minimum 0 */
+  subtotal: number;
+  /** @minimum 0 */
+  shipping: number;
   /** @minimum 0 */
   total: number;
   status: OrderStatus;
