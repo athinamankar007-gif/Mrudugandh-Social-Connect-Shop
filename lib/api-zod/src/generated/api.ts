@@ -543,15 +543,11 @@ export const AdminUpdateOrderResponse = zod.object({
 
 export const ListReviewsResponseItem = zod.object({
   "id": zod.string(),
-  "userId": zod.string(),
   "reviewerName": zod.string(),
-  "reviewerEmail": zod.string(),
   "message": zod.string(),
   "imagePaths": zod.array(zod.string()),
   "adminReply": zod.string().nullable(),
-  "approved": zod.boolean(),
-  "createdAt": zod.coerce.date(),
-  "updatedAt": zod.coerce.date()
+  "createdAt": zod.coerce.date()
 })
 export const ListReviewsResponse = zod.array(ListReviewsResponseItem)
 

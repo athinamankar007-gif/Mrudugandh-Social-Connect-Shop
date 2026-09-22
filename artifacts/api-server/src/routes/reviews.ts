@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { desc, eq, and, or } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { Router, type IRouter } from "express";
 import { clerkClient, getAuth } from "@clerk/express";
 import { db, reviewsTable } from "@workspace/db";
@@ -10,10 +10,14 @@ const router: IRouter = Router();
 function auth(req: any, res: any): string | null { const id = getAuth(req).userId; if (!id) res.status(401).json({ error: "Authentication required" }); return id; }
 
 router.get("/reviews", async (req, res): Promise<void> => {
-  const uid = getAuth(req).userId;
-  const rows = uid
-    ? await db.select().from(reviewsTable).where(or(eq(reviewsTable.approved, true), eq(reviewsTable.userId, uid)))
-    : await db.select().from(reviewsTable).where(eq(reviewsTable.approved, true));
+  const rows = await db.select({
+    id: reviewsTable.id,
+    reviewerName: reviewsTable.reviewerName,
+    message: reviewsTable.message,
+    imagePaths: reviewsTable.imagePaths,
+    adminReply: reviewsTable.adminReply,
+    createdAt: reviewsTable.createdAt,
+  }).from(reviewsTable).where(eq(reviewsTable.approved, true)).orderBy(desc(reviewsTable.createdAt));
   res.json(rows);
 });
 router.post("/reviews", async (req, res): Promise<void> => {

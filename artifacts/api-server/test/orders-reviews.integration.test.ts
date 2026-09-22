@@ -5,7 +5,16 @@ const state = vi.hoisted(() => ({
   rows: { orders: [] as Row[], reviews: [] as Row[], products: [] as Row[] },
   tables: {
     orders: { id: "id", userId: "userId", status: "status", approved: "approved", createdAt: "createdAt" },
-    reviews: { id: "id", userId: "userId", approved: "approved", createdAt: "createdAt" },
+    reviews: {
+      id: "id",
+      userId: "userId",
+      reviewerName: "reviewerName",
+      message: "message",
+      imagePaths: "imagePaths",
+      adminReply: "adminReply",
+      approved: "approved",
+      createdAt: "createdAt",
+    },
     products: { id: "id" },
   },
 }));
@@ -37,10 +46,12 @@ vi.mock("@workspace/db", () => {
         let values: any;
         return { values(v: any) { values = v; return this; }, returning: async () => { const list = Array.isArray(values) ? values : [values]; const target = values.userId !== undefined && values.message === undefined ? rows("orders") : rows("reviews"); for (const item of list) { if (target === rows("orders")) item.status ??= "Pending"; else { item.approved ??= false; item.adminReply ??= null; } } target.push(...list); return list; } };
       },
-      select: () => ({ from: (t: any) => {
+      select: (selection?: Record<string, string>) => ({ from: (t: any) => {
         const name = t === state.tables.orders ? "orders" : t === state.tables.products ? "products" : "reviews";
         let condition: any;
-        const filtered = () => rows(name).filter((r) => match(r, condition));
+        const filtered = () => rows(name).filter((r) => match(r, condition)).map((row) => selection
+          ? Object.fromEntries(Object.entries(selection).map(([key, column]) => [key, row[column]]))
+          : row);
         return {
           where(c: any) { condition = c; return this; },
           orderBy: async () => filtered(),
@@ -107,7 +118,11 @@ describe("customer orders and reviews integration", () => {
     expect((await request("/api/reviews/mine", asUser("alice"))).body[0].message).toBe("Lovely");
     const updated = await request(`/api/admin/reviews/${created.body.id}`, asUser("user_admin", { method: "PATCH", body: JSON.stringify({ approved: true, adminReply: "Thank you!" }) }));
     expect(updated.body).toMatchObject({ approved: true, adminReply: "Thank you!" });
-    expect((await request("/api/reviews")).body[0].message).toBe("Lovely");
+    const publicReview = (await request("/api/reviews", asUser("alice"))).body[0];
+    expect(publicReview).toMatchObject({ message: "Lovely", adminReply: "Thank you!" });
+    expect(publicReview).not.toHaveProperty("reviewerEmail");
+    expect(publicReview).not.toHaveProperty("userId");
+    expect(publicReview).not.toHaveProperty("approved");
   });
 
   it("validates authenticated review image uploads", async () => {

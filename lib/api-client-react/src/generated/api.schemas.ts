@@ -105,6 +105,16 @@ export interface Review {
   updatedAt: string;
 }
 
+export interface PublicReview {
+  id: string;
+  reviewerName: string;
+  message: string;
+  imagePaths: string[];
+  /** @nullable */
+  adminReply: string | null;
+  createdAt: string;
+}
+
 export interface ReviewInput {
   /** @minLength 1 */
   message: string;

@@ -339,7 +339,7 @@ paths:
     get:
       tags: [reviews]
       operationId: listReviews
-      responses: { "200": { description: Approved reviews, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Review" } } } } } }
+      responses: { "200": { description: Approved reviews, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/PublicReview" } } } } } }
     post:
       tags: [reviews]
       operationId: createReview
@@ -425,6 +425,16 @@ components:
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
       required: [id, userId, reviewerName, reviewerEmail, message, imagePaths, adminReply, approved, createdAt, updatedAt]
+    PublicReview:
+      type: object
+      properties:
+        id: { type: string }
+        reviewerName: { type: string }
+        message: { type: string }
+        imagePaths: { type: array, items: { type: string } }
+        adminReply: { type: [string, "null"] }
+        createdAt: { type: string, format: date-time }
+      required: [id, reviewerName, message, imagePaths, adminReply, createdAt]
     ReviewInput:
       type: object
       properties:

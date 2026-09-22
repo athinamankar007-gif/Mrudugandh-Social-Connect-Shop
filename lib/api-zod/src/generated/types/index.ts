@@ -20,6 +20,7 @@ export * from './product';
 export * from './productInput';
 export * from './productUpdate';
 export * from './productVariant';
+export * from './publicReview';
 export * from './review';
 export * from './reviewImageUploadUrlRequest';
 export * from './reviewImageUploadUrlRequestContentType';

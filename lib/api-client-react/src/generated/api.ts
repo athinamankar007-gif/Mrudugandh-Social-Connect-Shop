@@ -29,6 +29,7 @@ import type {
   Product,
   ProductInput,
   ProductUpdate,
+  PublicReview,
   Review,
   ReviewImageUploadUrlRequest,
   ReviewInput,
@@ -1153,9 +1154,9 @@ export const getListReviewsUrl = () => {
   return `/api/reviews`
 }
 
-export const listReviews = async ( options?: Parameters<typeof customFetch>[1]): Promise<Review[]> => {
+export const listReviews = async ( options?: Parameters<typeof customFetch>[1]): Promise<PublicReview[]> => {
 
-  return customFetch<Review[]>(getListReviewsUrl(),
+  return customFetch<PublicReview[]>(getListReviewsUrl(),
   {
     ...options,
     method: 'GET'
