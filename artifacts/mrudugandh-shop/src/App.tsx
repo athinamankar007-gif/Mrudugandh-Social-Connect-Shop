@@ -24,6 +24,14 @@ import plainDoharImg1 from '../../../attached_assets/PHOTO-2026-09-08-19-06-23_1
 import plainDoharImg2 from '../../../attached_assets/PHOTO-2026-09-08-19-46-03_1789840371266.jpg';
 import plainDoharImg3 from '../../../attached_assets/PHOTO-2026-09-08-19-46-12_1789840374181.jpg';
 import plainDoharImg4 from '../../../attached_assets/PHOTO-2026-09-08-19-45-45_1789840377036.jpg';
+import kanthaStoleImg1 from '../../../attached_assets/PHOTO-2026-09-22-18-28-26_1790084502109.jpg';
+import kanthaStoleImg2 from '../../../attached_assets/PHOTO-2026-09-22-18-27-38_1790084504691.jpg';
+import kanthaStoleImg3 from '../../../attached_assets/PHOTO-2026-09-22-18-28-44_1790084508640.jpg';
+import bambooCombImg from '../../../attached_assets/PHOTO-2026-09-22-17-33-16_1790084523348.jpg';
+import bambooPenImg from '../../../attached_assets/PHOTO-2026-09-22-18-26-29_1790084526801.jpg';
+import singleBedsheetImg1 from '../../../attached_assets/PHOTO-2026-09-22-17-19-11_1790084634120.jpg';
+import singleBedsheetImg2 from '../../../attached_assets/PHOTO-2026-09-22-17-19-11_2_1790084620206.jpg';
+import singleBedsheetImg3 from '../../../attached_assets/PHOTO-2026-09-22-17-19-11_3_1790084677725.jpg';
 
 import galleryImg0 from '../../../attached_assets/0_PHOTO-2026-09-19-15-10-28_1789840839387.jpg';
 import galleryImg1 from '../../../attached_assets/1_PHOTO-2026-09-19-15-10-29_1789840839387.jpg';
@@ -32,6 +40,10 @@ import galleryImg3 from '../../../attached_assets/3_PHOTO-2026-09-19-15-10-33_17
 import galleryImg4 from '../../../attached_assets/4_PHOTO-2026-09-19-15-10-34_1789840839387.jpg';
 import galleryImg5 from '../../../attached_assets/5_PHOTO-2026-09-19-15-10-37_1789840839387.jpg';
 import galleryImg6 from '../../../attached_assets/6_PHOTO-2026-09-19-15-10-38_1789840839387.jpg';
+import tanabanaVehiclePoster from '../../../attached_assets/IMG_4272_1790084549207.JPG';
+import exhibitionWorkImg1 from '../../../attached_assets/IMG_4621_1790084544307.JPG';
+import exhibitionWorkImg2 from '../../../attached_assets/IMG_4315_1790084546580.JPG';
+import exhibitionWorkImg3 from '../../../attached_assets/IMG_4695_1790084554786.JPG';
 
 type Variant = { label: string; price: number; inventory?: number; imagePaths?: string[]; images?: string[] };
 type Product = { id: string; name: string; category: string; price: number; description: string; variants?: Variant[]; image: string | null; images: string[]; imagePath?: string | null; imagePaths?: string[]; inventory?: number; available?: boolean };
@@ -73,16 +85,27 @@ function mapApiProduct(product: ApiProduct): Product {
     localImages = [kidsDoharImg1, kidsDoharImg2, kidsDoharImg3];
   } else if (lowerName.includes('plain dohar')) {
     localImages = [plainDoharImg1, plainDoharImg2, plainDoharImg3, plainDoharImg4];
+  } else if (product.id === 'kantha-plain-stole') {
+    localImages = [kanthaStoleImg1, kanthaStoleImg2, kanthaStoleImg3];
+  } else if (product.id === 'bamboo-comb') {
+    localImages = [bambooCombImg];
+  } else if (product.id === 'bamboo-pen') {
+    localImages = [bambooPenImg];
   }
 
   const images = apiImages.length > 0 ? apiImages : localImages;
+  const variants = product.variants?.map((v) => {
+    const images = v.imagePaths?.map(publicImageUrl).filter((path): path is string => Boolean(path)) || [];
+    const isSingleBedsheetVariant = product.id === 'bedsheet' && v.label === 'One Piece';
+    return {
+      ...v,
+      images: images.length > 0 ? images : isSingleBedsheetVariant ? [singleBedsheetImg1, singleBedsheetImg2, singleBedsheetImg3] : [],
+    };
+  });
 
   return {
     ...product,
-    variants: product.variants?.map((v) => ({
-      ...v,
-      images: v.imagePaths?.map(publicImageUrl).filter((path): path is string => Boolean(path)) || [],
-    })),
+    variants,
     image: images[0] ?? null,
     images,
   };
@@ -285,7 +308,7 @@ function About() {
 
 function Impact() {
   const items = [{ icon: Users, title: 'Supporting artisans', copy: 'Choosing handmade helps create space for the people and skills behind each product.' }, { icon: Sparkles, title: 'Preserving craftsmanship', copy: 'Traditional skills stay visible and relevant when we bring them into everyday life.' }, { icon: Leaf, title: 'Sustainable choices', copy: 'Thoughtful, lasting objects invite us to buy with care and keep with intention.' }, { icon: HeartHandshake, title: 'Community connection', copy: 'A meaningful purchase can become a small bridge between people, place and purpose.' }];
-  const gallery = [galleryImg0, galleryImg1, galleryImg2, galleryImg3, galleryImg4, galleryImg5, galleryImg6];
+  const gallery = [galleryImg0, galleryImg1, galleryImg2, galleryImg6];
 
   return <Shell><div className="mx-auto max-w-7xl px-5 pb-24 pt-14 lg:px-8"><div className="max-w-4xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Why it matters</p><h1 className="mt-4 font-display text-5xl leading-tight text-[#173b61] sm:text-7xl">The impact is in the connection.</h1><p className="mt-6 max-w-4xl text-lg leading-8 text-[#547080]">Mrudugandh has developed a growing ecosystem of organisations and individual beneficiaries whose products and skills we support through market access and promotion. We source and promote bamboo products from Sampurna Bamboo Kendra, Melghat, which are made by tribals, supporting community-based livelihoods. We collaborate with Corvee Foundation and ICS Foundation, Pune, promoting products created by their community beneficiaries, including those from denotified tribal communities.</p></div>
 
@@ -744,19 +767,30 @@ function Initiatives() {
               <h3 className="mt-3 font-display text-3xl sm:text-4xl text-[#173b61]">Employee Engagement (CSR)</h3>
               <p className="mt-5 text-base leading-7 text-[#547080]">We partner with organizations to conduct meaningful corporate social responsibility activities. Teams join us for hands-on, creative sessions including gullak painting, bag painting, and diya painting—fostering teamwork while creating beautiful items for a cause.</p>
             </div>
-            <div className="relative rounded-[2rem] overflow-hidden group shadow-md">
-              <img src={galleryImg3} alt="Employee engagement painting workshop" className="w-full aspect-[4/3] object-cover transition-transform duration-700 group-hover:scale-105" />
+            <div className="grid grid-cols-2 gap-3 rounded-[2rem] bg-[#e3f3f7] p-3 shadow-md sm:grid-cols-3">
+              {[
+                [galleryImg3, 'Employees painting Gullaks together'],
+                [galleryImg4, 'Painted Gullaks on display'],
+                [galleryImg5, 'Gullak painting workshop'],
+                [exhibitionWorkImg1, 'Community work presentation'],
+                [exhibitionWorkImg2, 'Mrudugandh exhibition stall'],
+                [exhibitionWorkImg3, 'Women at an exhibition stall'],
+              ].map(([image, alt]) => (
+                <div key={alt} className="overflow-hidden rounded-2xl bg-white">
+                  <img src={image} alt={alt} className="aspect-square w-full object-cover transition-transform duration-700 hover:scale-105" />
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-10 items-center">
             <div className="order-2 lg:order-1 relative rounded-[2rem] overflow-hidden group shadow-md">
-              <img src={galleryImg1} alt="Community empowerment" className="w-full aspect-[4/3] object-cover transition-transform duration-700 group-hover:scale-105" />
+              <img src={tanabanaVehiclePoster} alt="Tanabana project eco utility vehicle fundraiser" className="w-full aspect-[4/3] object-contain bg-[#f9f1df] transition-transform duration-700 group-hover:scale-105" />
             </div>
             <div className="order-1 lg:order-2 lg:pl-10">
               <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Giving Back</p>
               <h3 className="mt-3 font-display text-3xl sm:text-4xl text-[#173b61]">Donation Drives</h3>
-              <p className="mt-5 text-base leading-7 text-[#547080]">We regularly organize comprehensive donation drives to collect and distribute resources where they are needed most. We accept and carefully route clothes, furniture, household items, and financial aid to underprivileged communities and partner organizations.</p>
+              <p className="mt-5 text-base leading-7 text-[#547080]">We organize drives to collect clothes and upcycle old sarees. We are currently raising funds for an Eco Utility Vehicle for the Tanabana project to secure transportation for 104 tribal families.</p>
             </div>
           </div>
         </div>
