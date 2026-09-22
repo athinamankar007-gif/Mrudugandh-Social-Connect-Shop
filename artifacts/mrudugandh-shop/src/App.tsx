@@ -9,7 +9,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Link, Route, Switch, useLocation, useRoute, Router as WouterRouter } from 'wouter';
-import { ArrowRight, ChevronLeft, CircleCheck, HeartHandshake, Leaf, Menu, Minus, Package, Plus, Search, ShoppingBag, Sparkles, Trash2, Users, X, User } from 'lucide-react';
+import { ArrowRight, ChevronLeft, CircleCheck, HeartHandshake, Instagram, Leaf, Menu, Minus, Package, Plus, Search, ShoppingBag, Sparkles, Trash2, Users, X, User } from 'lucide-react';
 import logo from '../../../attached_assets/IMG_4539_1788762132648.JPG';
 import AdminPanel from '@/admin/AdminPanel';
 
@@ -168,19 +168,28 @@ function ProductGallery({ product, variant }: { product: Product; variant?: Vari
 function Header() {
   const { count } = useCart();
   const [open, setOpen] = useState(false);
-  const links = [['Shop', '/shop'], ['Our Story', '/about'], ['Our Impact', '/impact'], ['Contact', '/contact']];
+  const links = [['Shop', '/shop'], ['Our Story', '/about'], ['Our Impact', '/impact'], ['Initiatives', '/initiatives'], ['Contact', '/contact']];
   return <header className="sticky top-0 z-40 border-b border-[#cfe5ea] bg-[#f7fcfc]/95 backdrop-blur-md">
     <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-5 lg:px-8">
       <Link href="/" className="flex items-center gap-3" data-testid="link-logo"><img src={logo} alt="Mrudugandh Social Connect" className="h-12 w-12 rounded-full object-cover" /><span className="hidden text-sm font-bold tracking-[.16em] text-[#153a67] sm:block">MRUDUGANDH <span className="block text-[9px] font-medium tracking-[.36em] text-[#1996d3]">SOCIAL CONNECT</span></span></Link>
       <nav className="hidden items-center gap-8 md:flex">{links.map(([label, href]) => <Link key={href} href={href} className="text-[13px] font-semibold text-[#31516a] transition-colors hover:text-[#1688c6]" data-testid={`link-nav-${label.toLowerCase().replaceAll(' ', '-')}`}>{label}</Link>)}</nav>
-      <div className="flex items-center gap-2"><Link href="/shop" aria-label="Search the shop" className="rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" data-testid="button-search"><Search size={19} /></Link><Link href="/account" aria-label="Your account" className="rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" data-testid="link-account"><User size={19} /></Link><Link href="/cart" className="relative rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" aria-label="Open cart" data-testid="link-cart"><ShoppingBag size={19} />{count > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#efb34f] px-1 text-[10px] font-bold text-[#153a67]" data-testid="text-cart-count">{count}</span>}</Link><button className="rounded-full p-2.5 text-[#31516a] md:hidden" onClick={() => setOpen(!open)} aria-label="Toggle menu" data-testid="button-mobile-menu">{open ? <X size={20} /> : <Menu size={20} />}</button></div>
+      <div className="flex items-center gap-2">
+        <a href="https://www.instagram.com/explore/search/keyword/?q=mrudugandh%20social%20connect" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="flex rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" data-testid="link-instagram"><Instagram size={19} /></a>
+        <Link href="/shop" aria-label="Search the shop" className="rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" data-testid="button-search"><Search size={19} /></Link>
+        <Link href="/account" aria-label="Your account" className="rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" data-testid="link-account"><User size={19} /></Link>
+        <Link href="/cart" className="relative rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" aria-label="Open cart" data-testid="link-cart"><ShoppingBag size={19} />{count > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#efb34f] px-1 text-[10px] font-bold text-[#153a67]" data-testid="text-cart-count">{count}</span>}</Link>
+        <button className="rounded-full p-2.5 text-[#31516a] md:hidden" onClick={() => setOpen(!open)} aria-label="Toggle menu" data-testid="button-mobile-menu">{open ? <X size={20} /> : <Menu size={20} />}</button>
+      </div>
     </div>
-    {open && <nav className="border-t border-[#cfe5ea] bg-[#f7fcfc] px-5 py-4 md:hidden">{links.map(([label, href]) => <Link key={href} onClick={() => setOpen(false)} href={href} className="block border-b border-[#e0edef] py-3 text-sm font-semibold text-[#31516a]" data-testid={`link-mobile-${label.toLowerCase().replaceAll(' ', '-')}`}>{label}</Link>)}</nav>}
+    {open && <nav className="border-t border-[#cfe5ea] bg-[#f7fcfc] px-5 py-4 md:hidden">
+      {links.map(([label, href]) => <Link key={href} onClick={() => setOpen(false)} href={href} className="block border-b border-[#e0edef] py-3 text-sm font-semibold text-[#31516a]" data-testid={`link-mobile-${label.toLowerCase().replaceAll(' ', '-')}`}>{label}</Link>)}
+      <a href="https://www.instagram.com/explore/search/keyword/?q=mrudugandh%20social%20connect" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 border-b border-[#e0edef] py-3 text-sm font-semibold text-[#31516a]" data-testid="link-mobile-instagram"><Instagram size={16} /> Instagram</a>
+    </nav>}
   </header>;
 }
 
 function Footer() {
-  return <footer className="mt-24 bg-[#14395f] text-[#edf8fa]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr] lg:px-8"><div><img src={logo} alt="Mrudugandh Social Connect" className="mb-5 h-16 w-16 rounded-full object-cover" /><h2 className="font-display text-2xl">Handmade with Purpose.<br />Connected with Heart.</h2><p className="mt-4 max-w-xs text-sm leading-6 text-[#bfd5de]">A shop with a human story, celebrating traditional skills and meaningful craftsmanship.</p></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Explore</p><Link href="/shop" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-shop">Shop products</Link><Link href="/about" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-about">Our story</Link><Link href="/impact" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-impact">Our impact</Link></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Stay connected</p><div className="space-y-1 text-sm leading-6 text-[#bfd5de]"><p>Phone: +91 86683 31267 / +91 88309 65756</p><p>Email: mrudugandh.llp@gmail.com</p><p>Address: C/o - 35, Phatak Baug, Navi Peth, Sadashiv Peth, Pune, Maharashtra 411030</p></div><Link href="/contact" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white" data-testid="link-footer-contact">Contact us <ArrowRight size={15} /></Link></div></div><div className="border-t border-[#365875] px-5 py-5 text-center text-xs text-[#a8c3ce]">© {new Date().getFullYear()} Mrudugandh Social Connect. Handmade with purpose.</div></footer>;
+  return <footer className="mt-24 bg-[#14395f] text-[#edf8fa]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr] lg:px-8"><div><img src={logo} alt="Mrudugandh Social Connect" className="mb-5 h-16 w-16 rounded-full object-cover" /><h2 className="font-display text-2xl">Handmade with Purpose.<br />Connected with Heart.</h2><p className="mt-4 max-w-xs text-sm leading-6 text-[#bfd5de]">A shop with a human story, celebrating traditional skills and meaningful craftsmanship.</p><a href="https://www.instagram.com/explore/search/keyword/?q=mrudugandh%20social%20connect" target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex items-center gap-2 rounded-full border border-[#365875] bg-[#1a446e] px-4 py-2 text-sm font-bold text-[#edf8fa] transition-colors hover:bg-[#205080]" data-testid="link-footer-instagram"><Instagram size={16} /> Follow on Instagram</a></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Explore</p><Link href="/shop" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-shop">Shop products</Link><Link href="/about" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-about">Our story</Link><Link href="/initiatives" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-initiatives">Our initiatives</Link><Link href="/impact" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-impact">Our impact</Link></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Stay connected</p><div className="space-y-1 text-sm leading-6 text-[#bfd5de]"><p>Phone: +91 86683 31267 / +91 88309 65756</p><p>Email: mrudugandh.llp@gmail.com</p><p>Address: C/o - 35, Phatak Baug, Navi Peth, Sadashiv Peth, Pune, Maharashtra 411030</p></div><Link href="/contact" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white" data-testid="link-footer-contact">Contact us <ArrowRight size={15} /></Link></div></div><div className="border-t border-[#365875] px-5 py-5 text-center text-xs text-[#a8c3ce]">© {new Date().getFullYear()} Mrudugandh Social Connect. Handmade with purpose.</div></footer>;
 }
 
 function Shell({ children }: { children: ReactNode }) {
@@ -679,10 +688,168 @@ function Account() {
   </div></Shell>;
 }
 
+function Initiatives() {
+  const networks = [
+    {
+      title: "We Support",
+      items: ["Yavatmal tribal women", "Melghat tribal brothers", "India Sponsorship Committee", "Kashvi Self Help Group", "Aurogyan Foundation", "Corvee Foundation"]
+    },
+    {
+      title: "Exhibitions",
+      items: ["Udaan", "Pune Shopping Festival", "Puneri Saaz"]
+    },
+    {
+      title: "Corporate Partners",
+      items: ["Infosys", "Persistent", "HSBC", "Mastercard", "Tech Mahindra"]
+    }
+  ];
+
+  return (
+    <Shell>
+      <section className="relative overflow-hidden bg-[#e3f3f7] pt-16 pb-24 sm:pt-24 lg:pt-32">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8 text-center relative z-10">
+          <p className="mb-5 inline-flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[.24em] text-[#1688c6]">
+            <span className="h-px w-8 bg-[#efb34f]" /> Connected with Heart <span className="h-px w-8 bg-[#efb34f]" />
+          </p>
+          <h1 className="mx-auto max-w-4xl font-display text-5xl leading-[1.05] tracking-tight text-[#153a67] sm:text-6xl lg:text-7xl">
+            Our Initiatives &amp; Network
+          </h1>
+          <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-[#496a7a]">
+            Connecting grassroots producers, women entrepreneurs, artisans, underprivileged communities, and urban customers through purposeful action.
+          </p>
+        </div>
+      </section>
+
+      {/* Core Initiatives Profile */}
+      <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+        <div className="text-center mb-16">
+          <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">What We Do</p>
+          <h2 className="mt-3 font-display text-4xl text-[#173b61]">Core Initiatives Profile</h2>
+        </div>
+        <div className="grid gap-16 lg:gap-24">
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
+            <div className="order-2 lg:order-1 relative rounded-[2rem] overflow-hidden group shadow-md">
+              <img src={galleryImg0} alt="Women sewing in a workshop" className="w-full aspect-[4/3] object-cover transition-transform duration-700 group-hover:scale-105" />
+            </div>
+            <div className="order-1 lg:order-2 lg:pl-10">
+              <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Empowerment</p>
+              <h3 className="mt-3 font-display text-3xl sm:text-4xl text-[#173b61]">Product Selling</h3>
+              <p className="mt-5 text-base leading-7 text-[#547080]">Our online store serves as a direct bridge between traditional craftsmanship and conscious consumers. We focus on the empowerment of local artisans, providing them with a platform to showcase their skills, reach a wider audience, and build sustainable livelihoods through their craft.</p>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
+            <div className="lg:pr-10">
+              <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Corporate Partnerships</p>
+              <h3 className="mt-3 font-display text-3xl sm:text-4xl text-[#173b61]">Employee Engagement (CSR)</h3>
+              <p className="mt-5 text-base leading-7 text-[#547080]">We partner with organizations to conduct meaningful corporate social responsibility activities. Teams join us for hands-on, creative sessions including gullak painting, bag painting, and diya painting—fostering teamwork while creating beautiful items for a cause.</p>
+            </div>
+            <div className="relative rounded-[2rem] overflow-hidden group shadow-md">
+              <img src={galleryImg3} alt="Employee engagement painting workshop" className="w-full aspect-[4/3] object-cover transition-transform duration-700 group-hover:scale-105" />
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
+            <div className="order-2 lg:order-1 relative rounded-[2rem] overflow-hidden group shadow-md">
+              <img src={galleryImg1} alt="Community empowerment" className="w-full aspect-[4/3] object-cover transition-transform duration-700 group-hover:scale-105" />
+            </div>
+            <div className="order-1 lg:order-2 lg:pl-10">
+              <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Giving Back</p>
+              <h3 className="mt-3 font-display text-3xl sm:text-4xl text-[#173b61]">Donation Drives</h3>
+              <p className="mt-5 text-base leading-7 text-[#547080]">We regularly organize comprehensive donation drives to collect and distribute resources where they are needed most. We accept and carefully route clothes, furniture, household items, and financial aid to underprivileged communities and partner organizations.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Social & Environmental Impact */}
+      <section className="bg-[#f9f1df] py-20">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <div className="text-center mb-16">
+            <p className="text-xs font-bold uppercase tracking-[.2em] text-[#c1792c]">Our Reach</p>
+            <h2 className="mt-3 font-display text-4xl text-[#173b61]">Social &amp; Environmental Impact</h2>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-10 items-center mb-20">
+            <div className="lg:pr-10">
+              <p className="text-xs font-bold uppercase tracking-[.2em] text-[#c1792c]">Community Outreach</p>
+              <h3 className="mt-3 font-display text-3xl sm:text-4xl text-[#173b61]">Social Activities</h3>
+              <p className="mt-5 text-base leading-7 text-[#547080]">Our social activities directly impact the lives of rural children. We organize distribution drives to provide essential school kits and beautifully painted gullaks to encourage education and the habit of saving from a young age.</p>
+            </div>
+            <div className="relative rounded-[2rem] overflow-hidden group shadow-md">
+              <img src={galleryImg4} alt="Painted gullaks ready for distribution" className="w-full aspect-[4/3] object-cover transition-transform duration-700 group-hover:scale-105" />
+            </div>
+          </div>
+        </div>
+
+        {/* Environmental Note */}
+        <div className="bg-[#14395f] py-20 text-center px-5">
+          <div className="mx-auto max-w-4xl">
+            <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-[#1b4a78]">
+              <Leaf className="text-[#efb34f]" size={28} />
+            </div>
+            <p className="font-display text-2xl md:text-3xl text-white leading-relaxed">
+              "To reduce plastic waste, we do not use plastic bags. All customer purchases are packaged in reusable cloth bags stitched from old sarees."
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Student & Community Engagement */}
+      <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+        <div className="text-center mb-12">
+          <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Student &amp; Community Engagement</p>
+          <h2 className="mt-3 font-display text-4xl text-[#173b61]">Student Internships &amp; Community-Based Learning</h2>
+          <p className="mt-4 max-w-2xl mx-auto text-[#547080]">We are proud to collaborate with educational institutions, offering students hands-on community-based learning experiences.</p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
+          {['Fergusson College', 'Symbiosis College', 'Garware College', 'Wadia College', 'Modern College', 'SP College'].map((college) => (
+            <span key={college} className="px-6 py-3 rounded-full bg-[#e3f3f7] text-[#173b61] font-semibold text-sm border border-[#cfe5ea] transition-all hover:bg-[#1688c6] hover:text-white">
+              {college}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* Our Network & Associations */}
+      <section className="bg-[#f7fcfc] border-t border-[#cfe5ea] py-24">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <div className="text-center mb-16">
+            <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Collaborations</p>
+            <h2 className="mt-3 font-display text-4xl text-[#173b61]">Our Network &amp; Associations</h2>
+            <p className="mt-4 max-w-2xl mx-auto text-[#547080]">The strength of our impact lies in the partnerships we've built.</p>
+          </div>
+
+          <div className="grid lg:grid-cols-[1fr_2fr] gap-10 items-start">
+            <div className="relative rounded-[2rem] overflow-hidden shadow-md">
+              <img src={galleryImg2} alt="Selling products at an exhibition" className="w-full h-full object-cover min-h-[300px]" />
+            </div>
+            <div className="grid md:grid-cols-3 gap-8">
+              {networks.map((group) => (
+                <div key={group.title} className="bg-white rounded-[2rem] p-8 shadow-[0_5px_20px_rgba(17,55,91,.04)] border border-[#cfe5ea] transition-transform hover:-translate-y-1">
+                  <h3 className="font-display text-2xl text-[#173b61] mb-6 pb-4 border-b border-[#cfe5ea]">{group.title}</h3>
+                  <ul className="space-y-4">
+                    {group.items.map((item) => (
+                      <li key={item} className="flex items-start gap-3">
+                        <div className="mt-2 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-[#efb34f]" />
+                        <span className="text-[#547080] font-medium leading-relaxed">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </Shell>
+  );
+}
+
 function Router() {
   const [location] = useLocation();
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); document.title = location === '/' ? 'Mrudugandh Social Connect' : `Mrudugandh · ${location.slice(1).split('/')[0]}`; }, [location]);
-  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route path="/shop" component={Shop} /><Route path="/product/:id" component={ProductDetail} /><Route path="/about" component={About} /><Route path="/impact" component={Impact} /><Route path="/contact" component={Contact} /><Route path="/cart" component={Cart} /><Route path="/checkout" component={Checkout} /><Route path="/order-confirmation" component={Confirmation} /><Route path="/account" component={Account} /><Route path="/admin" component={Admin} /><Route path="/admin/sign-in" component={AdminSignInPage} /><Route path="/admin/sign-in/:rest*" component={AdminSignInPage} /><Route path="/sign-in" component={SignInPage} /><Route path="/sign-in/:rest*" component={SignInPage} /><Route path="/sign-up" component={SignUpPage} /><Route path="/sign-up/:rest*" component={SignUpPage} /><Route component={NotFound} /></Switch></ErrorBoundary>;
+  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route path="/shop" component={Shop} /><Route path="/product/:id" component={ProductDetail} /><Route path="/about" component={About} /><Route path="/impact" component={Impact} /><Route path="/initiatives" component={Initiatives} /><Route path="/contact" component={Contact} /><Route path="/cart" component={Cart} /><Route path="/checkout" component={Checkout} /><Route path="/order-confirmation" component={Confirmation} /><Route path="/account" component={Account} /><Route path="/admin" component={Admin} /><Route path="/admin/sign-in" component={AdminSignInPage} /><Route path="/admin/sign-in/:rest*" component={AdminSignInPage} /><Route path="/sign-in" component={SignInPage} /><Route path="/sign-in/:rest*" component={SignInPage} /><Route path="/sign-up" component={SignUpPage} /><Route path="/sign-up/:rest*" component={SignUpPage} /><Route component={NotFound} /></Switch></ErrorBoundary>;
 }
 
 function ApiAuthBridge() {
