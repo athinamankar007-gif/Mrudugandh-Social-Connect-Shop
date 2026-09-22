@@ -28,6 +28,10 @@ import kanthaStoleImg2 from '../../../attached_assets/PHOTO-2026-09-22-18-27-38_
 import kanthaStoleImg3 from '../../../attached_assets/PHOTO-2026-09-22-18-28-44_1790084508640.jpg';
 import bambooCombImg from '../../../attached_assets/PHOTO-2026-09-22-17-33-16_1790084523348.jpg';
 import bambooPenImg from '../../../attached_assets/PHOTO-2026-09-22-18-26-29_1790084526801.jpg';
+import bambooToothbrushImg1 from '../../../attached_assets/PHOTO-2026-09-22-19-27-53_1790085476414.jpg';
+import bambooToothbrushImg2 from '../../../attached_assets/PHOTO-2026-09-22-19-27-53_1790085477882.jpg';
+import bambooToothbrushImg3 from '../../../attached_assets/PHOTO-2026-09-22-19-32-33_1790085756950.jpg';
+import bambooToothbrushImg4 from '../../../attached_assets/image_1790085782468.png';
 import singleBedsheetImg1 from '../../../attached_assets/PHOTO-2026-09-22-17-19-11_1790084634120.jpg';
 import singleBedsheetImg2 from '../../../attached_assets/PHOTO-2026-09-22-17-19-11_2_1790084620206.jpg';
 import singleBedsheetImg3 from '../../../attached_assets/PHOTO-2026-09-22-17-19-11_3_1790084677725.jpg';
@@ -90,6 +94,8 @@ function mapApiProduct(product: ApiProduct): Product {
     localImages = [bambooCombImg];
   } else if (product.id === 'bamboo-pen') {
     localImages = [bambooPenImg];
+  } else if (product.id === 'bamboo-toothbrush') {
+    localImages = [bambooToothbrushImg1, bambooToothbrushImg2, bambooToothbrushImg3, bambooToothbrushImg4];
   }
 
   const images = apiImages.length > 0 ? apiImages : localImages;
