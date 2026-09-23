@@ -47,6 +47,7 @@ import tanabanaVehiclePoster from '../../../attached_assets/IMG_4272_17900845492
 import exhibitionWorkImg1 from '../../../attached_assets/IMG_4621_1790084544307.JPG';
 import exhibitionWorkImg2 from '../../../attached_assets/IMG_4315_1790084546580.JPG';
 import exhibitionWorkImg3 from '../../../attached_assets/IMG_4695_1790084554786.JPG';
+import instagramScanner from '../../../attached_assets/Unknown_1790177140770.jpeg';
 
 type Variant = { label: string; price: number; inventory?: number; imagePaths?: string[]; images?: string[] };
 type Product = { id: string; name: string; category: string; price: number; description: string; variants?: Variant[]; image: string | null; images: string[]; imagePath?: string | null; imagePaths?: string[]; inventory?: number; available?: boolean };
@@ -161,9 +162,11 @@ function CartProvider({ children }: { children: ReactNode }) {
   return <CartContext.Provider value={{ cart, add, update, remove, clear: () => setCart([]), subtotal, count: cart.reduce((sum, line) => sum + line.quantity, 0) }}>{children}</CartContext.Provider>;
 }
 
-function ProductImage({ product, large = false }: { product: Product; large?: boolean }) {
+function ProductImage({ product, large = false, variant }: { product: Product; large?: boolean; variant?: Variant }) {
   const [imageFailed, setImageFailed] = useState(false);
-  const image = product.images[0] ?? product.image;
+  const image = product.id === 'bedsheet'
+    ? (variant?.images?.[0] ?? (variant?.label === 'Two Pieces' ? null : product.variants?.find((item) => item.label === 'One Piece')?.images?.[0]))
+    : (variant?.images?.[0] ?? product.images[0] ?? product.image);
   const frameClass = large ? 'min-h-[360px]' : 'aspect-[4/3]';
   if (image && !imageFailed) return <div className={`w-full overflow-hidden ${frameClass}`}><img src={image} alt={product.name} onError={() => setImageFailed(true)} className="h-full w-full object-cover" /></div>;
   const icon = product.category === 'Bamboo Products' ? <Leaf /> : product.category === 'Dohars' ? <Sparkles /> : <Package />;
@@ -186,7 +189,7 @@ function ProductGallery({ product, variant }: { product: Product; variant?: Vari
   const usableImages = images.filter((image) => !failedImages.includes(image));
   const activeImage = usableImages.includes(selectedImage ?? "") ? selectedImage : usableImages[0] ?? null;
 
-  if (!activeImage) return <ProductImage product={product} large />;
+  if (!activeImage) return <ProductImage product={product} variant={variant} large />;
   return <div>
     <div className="overflow-hidden rounded-2xl bg-[#e3f3f7]"><img src={activeImage} alt={product.name} onError={() => setFailedImages((current) => [...new Set([...current, activeImage])])} className="min-h-[360px] w-full object-cover" /></div>
     {usableImages.length > 1 && <div className="mt-3 grid grid-cols-4 gap-2">{usableImages.map((image, index) => <button key={`${image}-${index}`} type="button" onClick={() => setSelectedImage(image)} className={`overflow-hidden rounded-lg border-2 ${activeImage === image ? 'border-[#1688c6]' : 'border-transparent'}`} aria-label={`View image ${index + 1}`}><img src={image} alt="" className="aspect-square w-full object-cover" /></button>)}</div>}
@@ -200,9 +203,9 @@ function Header() {
   return <header className="sticky top-0 z-40 border-b border-[#cfe5ea] bg-[#f7fcfc]/95 backdrop-blur-md">
     <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-5 lg:px-8">
       <Link href="/" className="flex items-center gap-3" data-testid="link-logo"><img src={logo} alt="Mrudugandh Social Connect" className="h-12 w-12 rounded-full object-cover" /><span className="hidden text-sm font-bold tracking-[.16em] text-[#153a67] sm:block">MRUDUGANDH <span className="block text-[9px] font-medium tracking-[.36em] text-[#1996d3]">SOCIAL CONNECT</span></span></Link>
-      <nav className="hidden items-center gap-8 md:flex">{links.map(([label, href]) => <Link key={href} href={href} className="text-[13px] font-semibold text-[#31516a] transition-colors hover:text-[#1688c6]" data-testid={`link-nav-${label.toLowerCase().replaceAll(' ', '-')}`}>{label}</Link>)}</nav>
+      <nav className="hidden items-center gap-8 md:flex">{links.map(([label, href]) => <Link key={href} href={href} className="text-[13px] font-semibold text-[#31516a] transition-colors hover:text-[#1688c6]" data-testid={`link-nav-${label.toLowerCase().replaceAll(' ', '-')}`}>{label}</Link>)}<a href={instagramScanner} target="_blank" rel="noopener noreferrer" aria-label="Open Instagram scanner" className="rounded-full text-[#31516a] transition-colors hover:text-[#1688c6]" data-testid="link-instagram"><Instagram size={19} /></a></nav>
       <div className="flex items-center gap-2">
-        <a href="https://www.instagram.com/explore/search/keyword/?q=mrudugandh%20social%20connect" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="flex rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" data-testid="link-instagram"><Instagram size={19} /></a>
+        <a href={instagramScanner} target="_blank" rel="noopener noreferrer" aria-label="Open Instagram scanner" className="flex rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6] md:hidden" data-testid="link-mobile-header-instagram"><Instagram size={19} /></a>
         <Link href="/shop" aria-label="Search the shop" className="rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" data-testid="button-search"><Search size={19} /></Link>
         <Link href="/account" aria-label="Your account" className="rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" data-testid="link-account"><User size={19} /></Link>
         <Link href="/cart" className="relative rounded-full p-2.5 text-[#31516a] hover:bg-[#e7f5f6]" aria-label="Open cart" data-testid="link-cart"><ShoppingBag size={19} />{count > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#efb34f] px-1 text-[10px] font-bold text-[#153a67]" data-testid="text-cart-count">{count}</span>}</Link>
@@ -211,13 +214,13 @@ function Header() {
     </div>
     {open && <nav className="border-t border-[#cfe5ea] bg-[#f7fcfc] px-5 py-4 md:hidden">
       {links.map(([label, href]) => <Link key={href} onClick={() => setOpen(false)} href={href} className="block border-b border-[#e0edef] py-3 text-sm font-semibold text-[#31516a]" data-testid={`link-mobile-${label.toLowerCase().replaceAll(' ', '-')}`}>{label}</Link>)}
-      <a href="https://www.instagram.com/explore/search/keyword/?q=mrudugandh%20social%20connect" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 border-b border-[#e0edef] py-3 text-sm font-semibold text-[#31516a]" data-testid="link-mobile-instagram"><Instagram size={16} /> Instagram</a>
+      <a href={instagramScanner} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 border-b border-[#e0edef] py-3 text-sm font-semibold text-[#31516a]" data-testid="link-mobile-instagram"><Instagram size={16} /> Instagram scanner</a>
     </nav>}
   </header>;
 }
 
 function Footer() {
-  return <footer className="mt-24 bg-[#14395f] text-[#edf8fa]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr] lg:px-8"><div><img src={logo} alt="Mrudugandh Social Connect" className="mb-5 h-16 w-16 rounded-full object-cover" /><h2 className="font-display text-2xl">Handmade with Purpose.<br />Connected with Heart.</h2><p className="mt-4 max-w-xs text-sm leading-6 text-[#bfd5de]">A shop with a human story, celebrating traditional skills and meaningful craftsmanship.</p><a href="https://www.instagram.com/explore/search/keyword/?q=mrudugandh%20social%20connect" target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex items-center gap-2 rounded-full border border-[#365875] bg-[#1a446e] px-4 py-2 text-sm font-bold text-[#edf8fa] transition-colors hover:bg-[#205080]" data-testid="link-footer-instagram"><Instagram size={16} /> Follow on Instagram</a></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Explore</p><Link href="/shop" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-shop">Shop products</Link><Link href="/about" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-about">Our story</Link><Link href="/initiatives" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-initiatives">Our initiatives</Link><Link href="/impact" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-impact">Our impact</Link></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Stay connected</p><div className="space-y-1 text-sm leading-6 text-[#bfd5de]"><p>Phone: +91 86683 31267 / +91 88309 65756</p><p>Email: mrudugandh.llp@gmail.com</p><p>Address: C/o - 35, Phatak Baug, Navi Peth, Sadashiv Peth, Pune, Maharashtra 411030</p></div><Link href="/contact" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white" data-testid="link-footer-contact">Contact us <ArrowRight size={15} /></Link></div></div><div className="border-t border-[#365875] px-5 py-5 text-center text-xs text-[#a8c3ce]">© {new Date().getFullYear()} Mrudugandh Social Connect. Handmade with purpose.</div></footer>;
+  return <footer className="mt-24 bg-[#14395f] text-[#edf8fa]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr] lg:px-8"><div><img src={logo} alt="Mrudugandh Social Connect" className="mb-5 h-16 w-16 rounded-full object-cover" /><h2 className="font-display text-2xl">Handmade with Purpose.<br />Connected with Heart.</h2><p className="mt-4 max-w-xs text-sm leading-6 text-[#bfd5de]">A shop with a human story, celebrating traditional skills and meaningful craftsmanship.</p><a href={instagramScanner} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex items-center gap-2 rounded-full border border-[#365875] bg-[#1a446e] px-4 py-2 text-sm font-bold text-[#edf8fa] transition-colors hover:bg-[#205080]" data-testid="link-footer-instagram"><Instagram size={16} /> Follow on Instagram</a><p className="mt-2 text-sm text-[#bfd5de]">@mrudungasocialconnect</p></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Explore</p><Link href="/shop" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-shop">Shop products</Link><Link href="/about" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-about">Our story</Link><Link href="/initiatives" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-initiatives">Our initiatives</Link><Link href="/impact" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-impact">Our impact</Link></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Stay connected</p><div className="space-y-1 text-sm leading-6 text-[#bfd5de]"><p>Phone: +91 86683 31267 / +91 88309 65756</p><p>Email: mrudugandh.llp@gmail.com</p><p>Address: C/o - 35, Phatak Baug, Navi Peth, Sadashiv Peth, Pune, Maharashtra 411030</p></div><Link href="/contact" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white" data-testid="link-footer-contact">Contact us <ArrowRight size={15} /></Link></div></div><div className="border-t border-[#365875] px-5 py-5 text-center text-xs text-[#a8c3ce]">© {new Date().getFullYear()} Mrudugandh Social Connect. Handmade with purpose.</div></footer>;
 }
 
 function Shell({ children }: { children: ReactNode }) {
@@ -309,7 +312,7 @@ function Cart() {
   const { cart, update, remove, subtotal } = useCart();
   const shipping = subtotal === 0 || subtotal >= 2999 ? 0 : 100;
   if (!cart.length) return <Shell><Empty title="Your cart is waiting" copy="Bring home something meaningful from the collection." href="/shop" action="Explore the shop" /></Shell>;
-  return <Shell><div className="mx-auto max-w-7xl px-5 pb-24 pt-14 lg:px-8"><div className="mb-10"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Your selection</p><h1 className="mt-3 font-display text-5xl text-[#173b61]">Your cart</h1></div><div className="grid gap-8 lg:grid-cols-[1fr_360px]"><div className="space-y-3">{cart.map((line) => { const product = products.find((item) => item.id === line.productId); if (!product) return null; const key = cartKey(line); const linePrice = line.variant?.price ?? product.price; return <div key={key} className="flex gap-4 rounded-2xl border border-[#cfe5ea] bg-white p-4"><div className="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-[#e3f3f7] sm:h-32 sm:w-32"><ProductImage product={product} /></div><div className="flex min-w-0 flex-1 flex-col justify-between"><div><div className="flex justify-between gap-2"><div><Link href={`/product/${product.id}`} className="font-display text-xl text-[#173b61]" data-testid={`link-cart-product-${product.id}`}>{product.name}</Link>{line.variant && <p className="mt-1 text-xs text-[#6b8490]">Size: {line.variant.label}</p>}</div><button onClick={() => remove(key)} className="text-[#849aa2] hover:text-[#b94d45]" aria-label={`Remove ${product.name}`} data-testid={`button-remove-${product.id}`}><Trash2 size={17} /></button></div></div><div className="flex items-center justify-between"><div className="flex items-center rounded-full border border-[#cfe5ea]"><button onClick={() => update(key, line.quantity - 1)} className="p-2 text-[#547080]" aria-label="Decrease item quantity" data-testid={`button-cart-decrease-${product.id}`}><Minus size={13} /></button><span className="w-7 text-center text-sm" data-testid={`text-cart-quantity-${product.id}`}>{line.quantity}</span><button onClick={() => update(key, line.quantity + 1)} className="p-2 text-[#547080]" aria-label="Increase item quantity" data-testid={`button-cart-increase-${product.id}`}><Plus size={13} /></button></div><span className="font-bold text-[#1688c6]" data-testid={`text-line-total-${product.id}`}>{money(linePrice * line.quantity)}</span></div></div></div> })}</div><aside className="h-fit rounded-2xl bg-[#173b61] p-6 text-white"><h2 className="font-display text-2xl">Order summary</h2><div className="mt-7 space-y-4 text-sm"><div className="flex justify-between text-[#c9dce2]"><span>Subtotal</span><span data-testid="text-subtotal">{money(subtotal)}</span></div><div className="flex justify-between text-[#c9dce2]"><span>Shipping</span><span data-testid="text-shipping">{shipping ? money(shipping) : 'Free'}</span></div><div className="border-t border-[#41617b] pt-4"><div className="flex justify-between text-base font-bold"><span>Total</span><span data-testid="text-cart-total">{money(subtotal + shipping)}</span></div></div></div>{shipping > 0 && <p className="mt-5 text-xs leading-5 text-[#bfd5de]">Shipping is free on orders of ₹2,999 or more.</p>}<Link href="/checkout" className="mt-7 flex w-full items-center justify-center gap-2 rounded-full bg-[#efb34f] px-5 py-3.5 text-sm font-bold text-[#173b61]" data-testid="link-checkout">Continue to checkout <ArrowRight size={16} /></Link></aside></div></div></Shell>;
+  return <Shell><div className="mx-auto max-w-7xl px-5 pb-24 pt-14 lg:px-8"><div className="mb-10"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Your selection</p><h1 className="mt-3 font-display text-5xl text-[#173b61]">Your cart</h1></div><div className="grid gap-8 lg:grid-cols-[1fr_360px]"><div className="space-y-3">{cart.map((line) => { const product = products.find((item) => item.id === line.productId); if (!product) return null; const key = cartKey(line); const linePrice = line.variant?.price ?? product.price; return <div key={key} className="flex gap-4 rounded-2xl border border-[#cfe5ea] bg-white p-4"><div className="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-[#e3f3f7] sm:h-32 sm:w-32"><ProductImage product={product} variant={product.variants?.find((item) => item.label === line.variant?.label)} /></div><div className="flex min-w-0 flex-1 flex-col justify-between"><div><div className="flex justify-between gap-2"><div><Link href={`/product/${product.id}`} className="font-display text-xl text-[#173b61]" data-testid={`link-cart-product-${product.id}`}>{product.name}</Link>{line.variant && <p className="mt-1 text-xs text-[#6b8490]">Size: {line.variant.label}</p>}</div><button onClick={() => remove(key)} className="text-[#849aa2] hover:text-[#b94d45]" aria-label={`Remove ${product.name}`} data-testid={`button-remove-${product.id}`}><Trash2 size={17} /></button></div></div><div className="flex items-center justify-between"><div className="flex items-center rounded-full border border-[#cfe5ea]"><button onClick={() => update(key, line.quantity - 1)} className="p-2 text-[#547080]" aria-label="Decrease item quantity" data-testid={`button-cart-decrease-${product.id}`}><Minus size={13} /></button><span className="w-7 text-center text-sm" data-testid={`text-cart-quantity-${product.id}`}>{line.quantity}</span><button onClick={() => update(key, line.quantity + 1)} className="p-2 text-[#547080]" aria-label="Increase item quantity" data-testid={`button-cart-increase-${product.id}`}><Plus size={13} /></button></div><span className="font-bold text-[#1688c6]" data-testid={`text-line-total-${product.id}`}>{money(linePrice * line.quantity)}</span></div></div></div> })}</div><aside className="h-fit rounded-2xl bg-[#173b61] p-6 text-white"><h2 className="font-display text-2xl">Order summary</h2><div className="mt-7 space-y-4 text-sm"><div className="flex justify-between text-[#c9dce2]"><span>Subtotal</span><span data-testid="text-subtotal">{money(subtotal)}</span></div><div className="flex justify-between text-[#c9dce2]"><span>Shipping</span><span data-testid="text-shipping">{shipping ? money(shipping) : 'Free'}</span></div><div className="border-t border-[#41617b] pt-4"><div className="flex justify-between text-base font-bold"><span>Total</span><span data-testid="text-cart-total">{money(subtotal + shipping)}</span></div></div></div>{shipping > 0 && <p className="mt-5 text-xs leading-5 text-[#bfd5de]">Shipping is free on orders of ₹2,999 or more.</p>}<Link href="/checkout" className="mt-7 flex w-full items-center justify-center gap-2 rounded-full bg-[#efb34f] px-5 py-3.5 text-sm font-bold text-[#173b61]" data-testid="link-checkout">Continue to checkout <ArrowRight size={16} /></Link></aside></div></div></Shell>;
 }
 
 function About() {
@@ -761,8 +764,10 @@ function Initiatives() {
         </div>
         <div className="grid gap-16 lg:gap-24">
           <div className="grid lg:grid-cols-2 gap-10 items-center">
-            <div className="order-2 lg:order-1 relative rounded-[2rem] overflow-hidden group shadow-md">
-              <img src={galleryImg0} alt="Women sewing in a workshop" className="w-full aspect-[4/3] object-cover transition-transform duration-700 group-hover:scale-105" />
+            <div className="order-2 lg:order-1 grid grid-cols-2 gap-3 rounded-[2rem] bg-[#e3f3f7] p-3 shadow-md">
+              <img src={galleryImg0} alt="Women sewing in a workshop" className="col-span-2 aspect-[16/9] w-full rounded-2xl object-cover" />
+              <img src={exhibitionWorkImg2} alt="Women making and presenting handmade products" className="aspect-square w-full rounded-2xl object-cover" />
+              <img src={galleryImg2} alt="Selling products at an exhibition stall" className="aspect-square w-full rounded-2xl object-cover" />
             </div>
             <div className="order-1 lg:order-2 lg:pl-10">
               <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Empowerment</p>
@@ -777,17 +782,16 @@ function Initiatives() {
               <h3 className="mt-3 font-display text-3xl sm:text-4xl text-[#173b61]">Employee Engagement (CSR)</h3>
               <p className="mt-5 text-base leading-7 text-[#547080]">We partner with organizations to conduct meaningful corporate social responsibility activities. Teams join us for hands-on, creative sessions including gullak painting, bag painting, and diya painting—fostering teamwork while creating beautiful items for a cause.</p>
             </div>
-            <div className="grid grid-cols-2 gap-3 rounded-[2rem] bg-[#e3f3f7] p-3 shadow-md sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 rounded-[2rem] bg-[#e3f3f7] p-3 shadow-md">
               {[
                 [galleryImg3, 'Employees painting Gullaks together'],
                 [galleryImg4, 'Painted Gullaks on display'],
                 [galleryImg5, 'Gullak painting workshop'],
                 [exhibitionWorkImg1, 'Community work presentation'],
-                [exhibitionWorkImg2, 'Mrudugandh exhibition stall'],
                 [exhibitionWorkImg3, 'Women at an exhibition stall'],
-              ].map(([image, alt]) => (
-                <div key={alt} className="overflow-hidden rounded-2xl bg-white">
-                  <img src={image} alt={alt} className="aspect-square w-full object-cover transition-transform duration-700 hover:scale-105" />
+              ].map(([image, alt], index) => (
+                <div key={alt} className={`overflow-hidden rounded-2xl bg-white ${index === 4 ? 'col-span-2' : ''}`}>
+                  <img src={image} alt={alt} className={`w-full object-cover transition-transform duration-700 hover:scale-105 ${index === 4 ? 'aspect-[2/1]' : 'aspect-square'}`} />
                 </div>
               ))}
             </div>
@@ -864,25 +868,20 @@ function Initiatives() {
             <p className="mt-4 max-w-2xl mx-auto text-[#547080]">The strength of our impact lies in the partnerships we've built.</p>
           </div>
 
-          <div className="grid lg:grid-cols-[1fr_2fr] gap-10 items-start">
-            <div className="relative rounded-[2rem] overflow-hidden shadow-md">
-              <img src={galleryImg2} alt="Selling products at an exhibition" className="w-full h-full object-cover min-h-[300px]" />
-            </div>
-            <div className="grid md:grid-cols-3 gap-8">
-              {networks.map((group) => (
-                <div key={group.title} className="bg-white rounded-[2rem] p-8 shadow-[0_5px_20px_rgba(17,55,91,.04)] border border-[#cfe5ea] transition-transform hover:-translate-y-1">
-                  <h3 className="font-display text-2xl text-[#173b61] mb-6 pb-4 border-b border-[#cfe5ea]">{group.title}</h3>
-                  <ul className="space-y-4">
-                    {group.items.map((item) => (
-                      <li key={item} className="flex items-start gap-3">
-                        <div className="mt-2 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-[#efb34f]" />
-                        <span className="text-[#547080] font-medium leading-relaxed">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {networks.map((group) => (
+              <div key={group.title} className="bg-white rounded-[2rem] p-8 shadow-[0_5px_20px_rgba(17,55,91,.04)] border border-[#cfe5ea] transition-transform hover:-translate-y-1">
+                <h3 className="font-display text-2xl text-[#173b61] mb-6 pb-4 border-b border-[#cfe5ea]">{group.title}</h3>
+                <ul className="space-y-4">
+                  {group.items.map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <div className="mt-2 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-[#efb34f]" />
+                      <span className="text-[#547080] font-medium leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
       </section>
