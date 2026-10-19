@@ -1,1 +1,2 @@
 - [Schema-backed route test doubles](schema-backed-route-tests.md) — Mock database defaults must match persisted schema defaults or response validation failures obscure route regressions.
+- [Initiative content classification](initiative-content.md) — Keep student/community exhibitions separate from corporate CSR; preserve full student-photo framing.

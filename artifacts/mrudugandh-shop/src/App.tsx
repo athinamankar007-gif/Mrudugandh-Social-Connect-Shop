@@ -10,6 +10,7 @@ import NotFound from '@/pages/not-found';
 import { Link, Route, Switch, useLocation, useRoute, Router as WouterRouter } from 'wouter';
 import { ArrowRight, ChevronLeft, CircleCheck, HeartHandshake, Instagram, Leaf, Menu, Minus, Package, Plus, Search, ShoppingBag, Sparkles, Trash2, Users, X, User } from 'lucide-react';
 import logo from '../../../attached_assets/IMG_4539_1788762132648.JPG';
+import { AboutContent, InitiativesContent, Tagline } from '@/components/PublicContent';
 import AdminPanel from '@/admin/AdminPanel';
 
 import superkingImg1 from '../../../attached_assets/_super_king_bedsheet_1789840344688.jpg';
@@ -220,7 +221,7 @@ function Header() {
 }
 
 function Footer() {
-  return <footer className="mt-24 bg-[#14395f] text-[#edf8fa]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr] lg:px-8"><div><img src={logo} alt="Mrudugandh Social Connect" className="mb-5 h-16 w-16 rounded-full object-cover" /><h2 className="font-display text-2xl">Handmade with Purpose.<br />Connected with Heart.</h2><p className="mt-4 max-w-xs text-sm leading-6 text-[#bfd5de]">A shop with a human story, celebrating traditional skills and meaningful craftsmanship.</p><a href={instagramScanner} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex items-center gap-2 rounded-full border border-[#365875] bg-[#1a446e] px-4 py-2 text-sm font-bold text-[#edf8fa] transition-colors hover:bg-[#205080]" data-testid="link-footer-instagram"><Instagram size={16} /> Follow on Instagram</a><p className="mt-2 text-sm text-[#bfd5de]">@mrudungasocialconnect</p></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Explore</p><Link href="/shop" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-shop">Shop products</Link><Link href="/about" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-about">Our story</Link><Link href="/initiatives" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-initiatives">Our initiatives</Link><Link href="/impact" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-impact">Our impact</Link></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Stay connected</p><div className="space-y-1 text-sm leading-6 text-[#bfd5de]"><p>Phone: +91 86683 31267 / +91 88309 65756</p><p>Email: mrudugandh.llp@gmail.com</p><p>Address: C/o - 35, Phatak Baug, Navi Peth, Sadashiv Peth, Pune, Maharashtra 411030</p></div><Link href="/contact" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white" data-testid="link-footer-contact">Contact us <ArrowRight size={15} /></Link></div></div><div className="border-t border-[#365875] px-5 py-5 text-center text-xs text-[#a8c3ce]">© {new Date().getFullYear()} Mrudugandh Social Connect. Handmade with purpose.</div></footer>;
+  return <footer className="mt-24 bg-[#14395f] text-[#edf8fa]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr] lg:px-8"><div><img src={logo} alt="Mrudugandh Social Connect" className="mb-5 h-16 w-16 rounded-full object-cover" /><h2 className="font-display text-2xl"><Tagline /></h2><p className="mt-4 max-w-xs text-sm leading-6 text-[#bfd5de]">A shop with a human story, celebrating traditional skills and meaningful craftsmanship.</p><a href={instagramScanner} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex items-center gap-2 rounded-full border border-[#365875] bg-[#1a446e] px-4 py-2 text-sm font-bold text-[#edf8fa] transition-colors hover:bg-[#205080]" data-testid="link-footer-instagram"><Instagram size={16} /> Follow on Instagram</a><p className="mt-2 text-sm text-[#bfd5de]">@mrudungasocialconnect</p></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Explore</p><Link href="/shop" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-shop">Shop products</Link><Link href="/about" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-about">Our story</Link><Link href="/initiatives" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-initiatives">Our initiatives</Link><Link href="/impact" className="block py-1.5 text-sm text-[#d6e6eb] hover:text-white" data-testid="link-footer-impact">Our impact</Link></div><div><p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-[#efb34f]">Stay connected</p><div className="space-y-1 text-sm leading-6 text-[#bfd5de]"><p>Phone: +91 86683 31267 / +91 88309 65756</p><p>Email: mrudugandh.llp@gmail.com</p><p>Address: C/o - 35, Phatak Baug, Navi Peth, Sadashiv Peth, Pune, Maharashtra 411030</p></div><Link href="/contact" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white" data-testid="link-footer-contact">Contact us <ArrowRight size={15} /></Link></div></div><div className="border-t border-[#365875] px-5 py-5 text-center text-xs text-[#a8c3ce]">© {new Date().getFullYear()} Mrudugandh Social Connect. Handmade with purpose.</div></footer>;
 }
 
 function Shell({ children }: { children: ReactNode }) {
@@ -315,9 +316,7 @@ function Cart() {
   return <Shell><div className="mx-auto max-w-7xl px-5 pb-24 pt-14 lg:px-8"><div className="mb-10"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Your selection</p><h1 className="mt-3 font-display text-5xl text-[#173b61]">Your cart</h1></div><div className="grid gap-8 lg:grid-cols-[1fr_360px]"><div className="space-y-3">{cart.map((line) => { const product = products.find((item) => item.id === line.productId); if (!product) return null; const key = cartKey(line); const linePrice = line.variant?.price ?? product.price; return <div key={key} className="flex gap-4 rounded-2xl border border-[#cfe5ea] bg-white p-4"><div className="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-[#e3f3f7] sm:h-32 sm:w-32"><ProductImage product={product} variant={product.variants?.find((item) => item.label === line.variant?.label)} /></div><div className="flex min-w-0 flex-1 flex-col justify-between"><div><div className="flex justify-between gap-2"><div><Link href={`/product/${product.id}`} className="font-display text-xl text-[#173b61]" data-testid={`link-cart-product-${product.id}`}>{product.name}</Link>{line.variant && <p className="mt-1 text-xs text-[#6b8490]">Size: {line.variant.label}</p>}</div><button onClick={() => remove(key)} className="text-[#849aa2] hover:text-[#b94d45]" aria-label={`Remove ${product.name}`} data-testid={`button-remove-${product.id}`}><Trash2 size={17} /></button></div></div><div className="flex items-center justify-between"><div className="flex items-center rounded-full border border-[#cfe5ea]"><button onClick={() => update(key, line.quantity - 1)} className="p-2 text-[#547080]" aria-label="Decrease item quantity" data-testid={`button-cart-decrease-${product.id}`}><Minus size={13} /></button><span className="w-7 text-center text-sm" data-testid={`text-cart-quantity-${product.id}`}>{line.quantity}</span><button onClick={() => update(key, line.quantity + 1)} className="p-2 text-[#547080]" aria-label="Increase item quantity" data-testid={`button-cart-increase-${product.id}`}><Plus size={13} /></button></div><span className="font-bold text-[#1688c6]" data-testid={`text-line-total-${product.id}`}>{money(linePrice * line.quantity)}</span></div></div></div> })}</div><aside className="h-fit rounded-2xl bg-[#173b61] p-6 text-white"><h2 className="font-display text-2xl">Order summary</h2><div className="mt-7 space-y-4 text-sm"><div className="flex justify-between text-[#c9dce2]"><span>Subtotal</span><span data-testid="text-subtotal">{money(subtotal)}</span></div><div className="flex justify-between text-[#c9dce2]"><span>Shipping</span><span data-testid="text-shipping">{shipping ? money(shipping) : 'Free'}</span></div><div className="border-t border-[#41617b] pt-4"><div className="flex justify-between text-base font-bold"><span>Total</span><span data-testid="text-cart-total">{money(subtotal + shipping)}</span></div></div></div>{shipping > 0 && <p className="mt-5 text-xs leading-5 text-[#bfd5de]">Shipping is free on orders of ₹2,999 or more.</p>}<Link href="/checkout" className="mt-7 flex w-full items-center justify-center gap-2 rounded-full bg-[#efb34f] px-5 py-3.5 text-sm font-bold text-[#173b61]" data-testid="link-checkout">Continue to checkout <ArrowRight size={16} /></Link></aside></div></div></Shell>;
 }
 
-function About() {
-  return <Shell><section className="bg-[#e3f3f7]"><div className="mx-auto max-w-5xl px-5 py-20 text-center lg:py-28"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">The heart of the shop · दुकानाचे हृदय</p><h1 className="mx-auto mt-5 max-w-3xl font-display text-5xl leading-tight text-[#173b61] sm:text-7xl">More Than a Product — <em className="font-normal text-[#1688c6]">A Connection.</em></h1><p className="mt-5 text-2xl text-[#31516a]">उत्पादनापेक्षा अधिक — एक नाते.</p><p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-[#547080]">Handmade with Purpose. Connected with Heart.<br />उद्देशपूर्ण हस्तकला. मनापासून जोडलेले.</p></div></section><section className="mx-auto grid max-w-6xl gap-12 px-5 py-20 lg:grid-cols-2 lg:items-center lg:py-28"><div className="rounded-[2rem] bg-[#f9f1df] p-10 lg:p-16"><HeartHandshake className="mb-12 text-[#c1792c]" size={38} /><p className="font-display text-4xl leading-tight text-[#173b61]">A product carries more when you know where it begins.</p><p className="mt-4 text-xl leading-8 text-[#547080]">उत्पादनाची सुरुवात जिथून होते, तिथली कथा जाणून घेतल्यावर त्याचे महत्त्व अधिक वाढते.</p></div><div><p className="text-lg leading-8 text-[#547080]">Mrudugandh Social Connect is a social enterprise initiative dedicated to creating sustainable market access for grassroots producers, women entrepreneurs, artisans, underprivileged individuals and community-based organisations. We work as a bridge between those who create and those who consume—bringing authentic handmade products and community-led enterprises into urban markets through exhibitions, stalls, promotional campaigns and direct customer outreach.</p><p className="mt-6 text-lg leading-8 text-[#547080]">मृदुगंध सोशल कनेक्ट हा एक सामाजिक उपक्रम आहे जो तळागाळातील उत्पादक, महिला उद्योजक, कारागीर, वंचित व्यक्ती आणि समुदाय-आधारित संस्थांसाठी शाश्वत बाजारपेठ निर्माण करण्यासाठी समर्पित आहे. आम्ही निर्माणकर्ते आणि ग्राहक यांच्यात एक दुवा म्हणून काम करतो—प्रदर्शने, स्टॉल्स, प्रचारात्मक मोहिमा आणि थेट ग्राहकांशी संपर्क साधून अस्सल हस्तनिर्मित उत्पादने आणि समुदाय-नेतृत्वाखालील उपक्रम शहरी बाजारपेठेत आणतो.</p></div></section><section className="bg-[#173b61] text-white"><div className="mx-auto max-w-6xl px-5 py-20 text-center lg:py-24"><p className="mx-auto max-w-2xl font-display text-4xl leading-tight sm:text-5xl">Choose the things that make room for a story.</p><p className="mx-auto mt-4 max-w-2xl text-xl text-[#d6e6eb]">कथेकरिता जागा निर्माण करणाऱ्या वस्तू निवडा.</p><div className="mt-8 flex flex-wrap justify-center gap-3"><Link href="/shop" className="inline-flex items-center gap-2 rounded-full bg-[#efb34f] px-6 py-3.5 text-sm font-bold text-[#173b61]" data-testid="link-about-shop">Explore the collection <ArrowRight size={16} /></Link><a href="https://docs.google.com/forms/d/1pYcyZPJkmnSDP6P7OljPg9-xHsjc26XTORoi2aUPX3Y/edit?usp=drivesdk" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-[#8eb7c5] px-6 py-3.5 text-sm font-bold text-white hover:bg-white/10" data-testid="link-volunteer-registration">Volunteer Registration Link <ArrowRight size={16} /></a></div></div></section></Shell>;
-}
+function About() { return <AboutContent Shell={Shell} />; }
 
 function Impact() {
   const items = [{ icon: Users, title: 'Supporting artisans', copy: 'Choosing handmade helps create space for the people and skills behind each product.' }, { icon: Sparkles, title: 'Preserving craftsmanship', copy: 'Traditional skills stay visible and relevant when we bring them into everyday life.' }, { icon: Leaf, title: 'Sustainable choices', copy: 'Thoughtful, lasting objects invite us to buy with care and keep with intention.' }, { icon: HeartHandshake, title: 'Community connection', copy: 'A meaningful purchase can become a small bridge between people, place and purpose.' }];
@@ -724,170 +723,7 @@ function Account() {
   </div></Shell>;
 }
 
-function Initiatives() {
-  const networks = [
-    {
-      title: "We Support",
-      items: ["Yavatmal tribal women", "Melghat tribal brothers", "India Sponsorship Committee", "Kashvi Self Help Group", "Aurogyan Foundation", "Corvee Foundation"]
-    },
-    {
-      title: "Exhibitions",
-      items: ["Udaan", "Pune Shopping Festival", "Puneri Saaz"]
-    },
-    {
-      title: "Corporate Partners",
-      items: ["Infosys", "Persistent", "HSBC", "Mastercard", "Tech Mahindra"]
-    }
-  ];
-
-  return (
-    <Shell>
-      <section className="relative overflow-hidden bg-[#e3f3f7] pt-16 pb-24 sm:pt-24 lg:pt-32">
-        <div className="mx-auto max-w-7xl px-5 lg:px-8 text-center relative z-10">
-          <p className="mb-5 inline-flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[.24em] text-[#1688c6]">
-            <span className="h-px w-8 bg-[#efb34f]" /> Connected with Heart <span className="h-px w-8 bg-[#efb34f]" />
-          </p>
-          <h1 className="mx-auto max-w-4xl font-display text-5xl leading-[1.05] tracking-tight text-[#153a67] sm:text-6xl lg:text-7xl">
-            Our Initiatives &amp; Network
-          </h1>
-          <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-[#496a7a]">
-            Connecting grassroots producers, women entrepreneurs, artisans, underprivileged communities, and urban customers through purposeful action.
-          </p>
-        </div>
-      </section>
-
-      {/* Core Initiatives Profile */}
-      <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
-        <div className="text-center mb-16">
-          <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">What We Do</p>
-          <h2 className="mt-3 font-display text-4xl text-[#173b61]">Core Initiatives Profile</h2>
-        </div>
-        <div className="grid gap-16 lg:gap-24">
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
-            <div className="order-2 lg:order-1 grid grid-cols-2 gap-3 rounded-[2rem] bg-[#e3f3f7] p-3 shadow-md">
-              <img src={galleryImg0} alt="Women sewing in a workshop" className="col-span-2 aspect-[16/9] w-full rounded-2xl object-cover" />
-              <img src={exhibitionWorkImg2} alt="Women making and presenting handmade products" className="aspect-square w-full rounded-2xl object-cover" />
-              <img src={galleryImg2} alt="Selling products at an exhibition stall" className="aspect-square w-full rounded-2xl object-cover" />
-            </div>
-            <div className="order-1 lg:order-2 lg:pl-10">
-              <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Empowerment</p>
-              <h3 className="mt-3 font-display text-3xl sm:text-4xl text-[#173b61]">Product Selling</h3>
-              <p className="mt-5 text-base leading-7 text-[#547080]">Our online store serves as a direct bridge between traditional craftsmanship and conscious consumers. We focus on the empowerment of local artisans, providing them with a platform to showcase their skills, reach a wider audience, and build sustainable livelihoods through their craft.</p>
-            </div>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
-            <div className="lg:pr-10">
-              <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Corporate Partnerships</p>
-              <h3 className="mt-3 font-display text-3xl sm:text-4xl text-[#173b61]">Employee Engagement (CSR)</h3>
-              <p className="mt-5 text-base leading-7 text-[#547080]">We partner with organizations to conduct meaningful corporate social responsibility activities. Teams join us for hands-on, creative sessions including gullak painting, bag painting, and diya painting—fostering teamwork while creating beautiful items for a cause.</p>
-            </div>
-            <div className="grid grid-cols-2 gap-3 rounded-[2rem] bg-[#e3f3f7] p-3 shadow-md">
-              {[
-                [galleryImg3, 'Employees painting Gullaks together'],
-                [galleryImg4, 'Painted Gullaks on display'],
-                [galleryImg5, 'Gullak painting workshop'],
-                [exhibitionWorkImg1, 'Community work presentation'],
-                [exhibitionWorkImg3, 'Women at an exhibition stall'],
-              ].map(([image, alt], index) => (
-                <div key={alt} className={`overflow-hidden rounded-2xl bg-white ${index === 4 ? 'col-span-2' : ''}`}>
-                  <img src={image} alt={alt} className={`w-full object-cover transition-transform duration-700 hover:scale-105 ${index === 4 ? 'aspect-[2/1]' : 'aspect-square'}`} />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
-            <div className="order-2 lg:order-1 relative rounded-[2rem] overflow-hidden group shadow-md">
-              <img src={tanabanaVehiclePoster} alt="Tanabana project eco utility vehicle fundraiser" className="w-full aspect-[4/3] object-contain bg-[#f9f1df] transition-transform duration-700 group-hover:scale-105" />
-            </div>
-            <div className="order-1 lg:order-2 lg:pl-10">
-              <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Giving Back</p>
-              <h3 className="mt-3 font-display text-3xl sm:text-4xl text-[#173b61]">Donation Drives</h3>
-              <p className="mt-5 text-base leading-7 text-[#547080]">We organize drives to collect clothes and upcycle old sarees. We are currently raising funds for an Eco Utility Vehicle for the Tanabana project to secure transportation for 104 tribal families.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Social & Environmental Impact */}
-      <section className="bg-[#f9f1df] py-20">
-        <div className="mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-[.2em] text-[#c1792c]">Our Reach</p>
-            <h2 className="mt-3 font-display text-4xl text-[#173b61]">Social &amp; Environmental Impact</h2>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-10 items-center mb-20">
-            <div className="lg:pr-10">
-              <p className="text-xs font-bold uppercase tracking-[.2em] text-[#c1792c]">Community Outreach</p>
-              <h3 className="mt-3 font-display text-3xl sm:text-4xl text-[#173b61]">Social Activities</h3>
-              <p className="mt-5 text-base leading-7 text-[#547080]">Our social activities directly impact the lives of rural children. We organize distribution drives to provide essential school kits and beautifully painted gullaks to encourage education and the habit of saving from a young age.</p>
-            </div>
-            <div className="relative rounded-[2rem] overflow-hidden group shadow-md">
-              <img src={galleryImg4} alt="Painted gullaks ready for distribution" className="w-full aspect-[4/3] object-cover transition-transform duration-700 group-hover:scale-105" />
-            </div>
-          </div>
-        </div>
-
-        {/* Environmental Note */}
-        <div className="bg-[#14395f] py-20 text-center px-5">
-          <div className="mx-auto max-w-4xl">
-            <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-[#1b4a78]">
-              <Leaf className="text-[#efb34f]" size={28} />
-            </div>
-            <p className="font-display text-2xl md:text-3xl text-white leading-relaxed">
-              "To reduce plastic waste, we do not use plastic bags. All customer purchases are packaged in reusable cloth bags stitched from old sarees."
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Student & Community Engagement */}
-      <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
-        <div className="text-center mb-12">
-          <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Student &amp; Community Engagement</p>
-          <h2 className="mt-3 font-display text-4xl text-[#173b61]">Student Internships &amp; Community-Based Learning</h2>
-          <p className="mt-4 max-w-2xl mx-auto text-[#547080]">We are proud to collaborate with educational institutions, offering students hands-on community-based learning experiences.</p>
-        </div>
-        <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
-          {['Fergusson College', 'Symbiosis College', 'Garware College', 'Wadia College', 'Modern College', 'SP College'].map((college) => (
-            <span key={college} className="px-6 py-3 rounded-full bg-[#e3f3f7] text-[#173b61] font-semibold text-sm border border-[#cfe5ea] transition-all hover:bg-[#1688c6] hover:text-white">
-              {college}
-            </span>
-          ))}
-        </div>
-      </section>
-
-      {/* Our Network & Associations */}
-      <section className="bg-[#f7fcfc] border-t border-[#cfe5ea] py-24">
-        <div className="mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-[.2em] text-[#1688c6]">Collaborations</p>
-            <h2 className="mt-3 font-display text-4xl text-[#173b61]">Our Network &amp; Associations</h2>
-            <p className="mt-4 max-w-2xl mx-auto text-[#547080]">The strength of our impact lies in the partnerships we've built.</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {networks.map((group) => (
-              <div key={group.title} className="bg-white rounded-[2rem] p-8 shadow-[0_5px_20px_rgba(17,55,91,.04)] border border-[#cfe5ea] transition-transform hover:-translate-y-1">
-                <h3 className="font-display text-2xl text-[#173b61] mb-6 pb-4 border-b border-[#cfe5ea]">{group.title}</h3>
-                <ul className="space-y-4">
-                  {group.items.map((item) => (
-                    <li key={item} className="flex items-start gap-3">
-                      <div className="mt-2 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-[#efb34f]" />
-                      <span className="text-[#547080] font-medium leading-relaxed">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    </Shell>
-  );
-}
+function Initiatives() { return <InitiativesContent Shell={Shell} />; }
 
 function Router() {
   const [location] = useLocation();

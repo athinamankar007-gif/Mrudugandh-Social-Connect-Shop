@@ -9,6 +9,302 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary Public website content
+ */
+export const getSiteContentResponseStoryTextsMaxOne = 20000;
+
+export const getSiteContentResponsePartnersItemOneNameMax = 250;
+
+export const getSiteContentResponsePartnersItemOneLogoPathMax = 2000;
+
+export const getSiteContentResponsePartnersItemOneSortOrderMin = 0;
+export const getSiteContentResponsePartnersItemOneSortOrderMax = 10000;
+
+export const getSiteContentResponseInitiativesItemOneTitleMax = 250;
+
+export const getSiteContentResponseInitiativesItemOneEyebrowMax = 250;
+
+export const getSiteContentResponseInitiativesItemOneBodyMax = 20000;
+
+export const getSiteContentResponseInitiativesItemOneImagePathsItemMax = 2000;
+
+export const getSiteContentResponseInitiativesItemOneImagePathsMax = 30;
+
+export const getSiteContentResponseInitiativesItemOneSortOrderMin = 0;
+export const getSiteContentResponseInitiativesItemOneSortOrderMax = 10000;
+
+
+
+export const GetSiteContentResponse = zod.object({
+  "story": zod.object({
+  "texts": zod.record(zod.string(), zod.string().max(getSiteContentResponseStoryTextsMaxOne))
+}),
+  "partners": zod.array(zod.object({
+  "name": zod.string().min(1).max(getSiteContentResponsePartnersItemOneNameMax),
+  "group": zod.enum(['support', 'exhibition', 'corporate', 'college']),
+  "logoPath": zod.string().max(getSiteContentResponsePartnersItemOneLogoPathMax),
+  "sortOrder": zod.number().int().min(getSiteContentResponsePartnersItemOneSortOrderMin).max(getSiteContentResponsePartnersItemOneSortOrderMax)
+}).and(zod.object({
+  "id": zod.string()
+}))),
+  "initiatives": zod.array(zod.object({
+  "title": zod.string().min(1).max(getSiteContentResponseInitiativesItemOneTitleMax),
+  "eyebrow": zod.string().max(getSiteContentResponseInitiativesItemOneEyebrowMax),
+  "body": zod.string().max(getSiteContentResponseInitiativesItemOneBodyMax),
+  "section": zod.enum(['core', 'csr', 'student', 'impact', 'event']),
+  "imagePaths": zod.array(zod.string().min(1).max(getSiteContentResponseInitiativesItemOneImagePathsItemMax)).max(getSiteContentResponseInitiativesItemOneImagePathsMax),
+  "sortOrder": zod.number().int().min(getSiteContentResponseInitiativesItemOneSortOrderMin).max(getSiteContentResponseInitiativesItemOneSortOrderMax)
+}).and(zod.object({
+  "id": zod.string()
+})))
+})
+
+
+/**
+ * @summary Save website text (admin only)
+ */
+export const saveStoryContentBodyTextsMaxOne = 20000;
+
+
+
+export const SaveStoryContentBody = zod.object({
+  "texts": zod.record(zod.string(), zod.string().max(saveStoryContentBodyTextsMaxOne))
+})
+
+export const saveStoryContentResponseTextsMaxOne = 20000;
+
+
+
+export const SaveStoryContentResponse = zod.object({
+  "texts": zod.record(zod.string(), zod.string().max(saveStoryContentResponseTextsMaxOne))
+})
+
+
+/**
+ * @summary Add a collaborator (admin only)
+ */
+export const createContentPartnerBodyNameMax = 250;
+
+export const createContentPartnerBodyLogoPathMax = 2000;
+
+export const createContentPartnerBodySortOrderMin = 0;
+export const createContentPartnerBodySortOrderMax = 10000;
+
+
+
+export const CreateContentPartnerBody = zod.object({
+  "name": zod.string().min(1).max(createContentPartnerBodyNameMax),
+  "group": zod.enum(['support', 'exhibition', 'corporate', 'college']),
+  "logoPath": zod.string().max(createContentPartnerBodyLogoPathMax),
+  "sortOrder": zod.number().int().min(createContentPartnerBodySortOrderMin).max(createContentPartnerBodySortOrderMax)
+})
+
+export const createContentPartnerResponseOneNameMax = 250;
+
+export const createContentPartnerResponseOneLogoPathMax = 2000;
+
+export const createContentPartnerResponseOneSortOrderMin = 0;
+export const createContentPartnerResponseOneSortOrderMax = 10000;
+
+
+
+export const CreateContentPartnerResponse = zod.object({
+  "name": zod.string().min(1).max(createContentPartnerResponseOneNameMax),
+  "group": zod.enum(['support', 'exhibition', 'corporate', 'college']),
+  "logoPath": zod.string().max(createContentPartnerResponseOneLogoPathMax),
+  "sortOrder": zod.number().int().min(createContentPartnerResponseOneSortOrderMin).max(createContentPartnerResponseOneSortOrderMax)
+}).and(zod.object({
+  "id": zod.string()
+}))
+
+
+/**
+ * @summary Edit a collaborator (admin only)
+ */
+
+
+
+export const SaveContentPartnerParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const saveContentPartnerBodyNameMax = 250;
+
+export const saveContentPartnerBodyLogoPathMax = 2000;
+
+export const saveContentPartnerBodySortOrderMin = 0;
+export const saveContentPartnerBodySortOrderMax = 10000;
+
+
+
+export const SaveContentPartnerBody = zod.object({
+  "name": zod.string().min(1).max(saveContentPartnerBodyNameMax),
+  "group": zod.enum(['support', 'exhibition', 'corporate', 'college']),
+  "logoPath": zod.string().max(saveContentPartnerBodyLogoPathMax),
+  "sortOrder": zod.number().int().min(saveContentPartnerBodySortOrderMin).max(saveContentPartnerBodySortOrderMax)
+})
+
+export const saveContentPartnerResponseOneNameMax = 250;
+
+export const saveContentPartnerResponseOneLogoPathMax = 2000;
+
+export const saveContentPartnerResponseOneSortOrderMin = 0;
+export const saveContentPartnerResponseOneSortOrderMax = 10000;
+
+
+
+export const SaveContentPartnerResponse = zod.object({
+  "name": zod.string().min(1).max(saveContentPartnerResponseOneNameMax),
+  "group": zod.enum(['support', 'exhibition', 'corporate', 'college']),
+  "logoPath": zod.string().max(saveContentPartnerResponseOneLogoPathMax),
+  "sortOrder": zod.number().int().min(saveContentPartnerResponseOneSortOrderMin).max(saveContentPartnerResponseOneSortOrderMax)
+}).and(zod.object({
+  "id": zod.string()
+}))
+
+
+/**
+ * @summary Remove a collaborator (admin only)
+ */
+
+
+
+export const DeleteContentPartnerParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const DeleteContentPartnerResponse = zod.void()
+
+
+/**
+ * @summary Add an initiative (admin only)
+ */
+export const createContentInitiativeBodyTitleMax = 250;
+
+export const createContentInitiativeBodyEyebrowMax = 250;
+
+export const createContentInitiativeBodyBodyMax = 20000;
+
+export const createContentInitiativeBodyImagePathsItemMax = 2000;
+
+export const createContentInitiativeBodyImagePathsMax = 30;
+
+export const createContentInitiativeBodySortOrderMin = 0;
+export const createContentInitiativeBodySortOrderMax = 10000;
+
+
+
+export const CreateContentInitiativeBody = zod.object({
+  "title": zod.string().min(1).max(createContentInitiativeBodyTitleMax),
+  "eyebrow": zod.string().max(createContentInitiativeBodyEyebrowMax),
+  "body": zod.string().max(createContentInitiativeBodyBodyMax),
+  "section": zod.enum(['core', 'csr', 'student', 'impact', 'event']),
+  "imagePaths": zod.array(zod.string().min(1).max(createContentInitiativeBodyImagePathsItemMax)).max(createContentInitiativeBodyImagePathsMax),
+  "sortOrder": zod.number().int().min(createContentInitiativeBodySortOrderMin).max(createContentInitiativeBodySortOrderMax)
+})
+
+export const createContentInitiativeResponseOneTitleMax = 250;
+
+export const createContentInitiativeResponseOneEyebrowMax = 250;
+
+export const createContentInitiativeResponseOneBodyMax = 20000;
+
+export const createContentInitiativeResponseOneImagePathsItemMax = 2000;
+
+export const createContentInitiativeResponseOneImagePathsMax = 30;
+
+export const createContentInitiativeResponseOneSortOrderMin = 0;
+export const createContentInitiativeResponseOneSortOrderMax = 10000;
+
+
+
+export const CreateContentInitiativeResponse = zod.object({
+  "title": zod.string().min(1).max(createContentInitiativeResponseOneTitleMax),
+  "eyebrow": zod.string().max(createContentInitiativeResponseOneEyebrowMax),
+  "body": zod.string().max(createContentInitiativeResponseOneBodyMax),
+  "section": zod.enum(['core', 'csr', 'student', 'impact', 'event']),
+  "imagePaths": zod.array(zod.string().min(1).max(createContentInitiativeResponseOneImagePathsItemMax)).max(createContentInitiativeResponseOneImagePathsMax),
+  "sortOrder": zod.number().int().min(createContentInitiativeResponseOneSortOrderMin).max(createContentInitiativeResponseOneSortOrderMax)
+}).and(zod.object({
+  "id": zod.string()
+}))
+
+
+/**
+ * @summary Edit an initiative (admin only)
+ */
+
+
+
+export const SaveContentInitiativeParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const saveContentInitiativeBodyTitleMax = 250;
+
+export const saveContentInitiativeBodyEyebrowMax = 250;
+
+export const saveContentInitiativeBodyBodyMax = 20000;
+
+export const saveContentInitiativeBodyImagePathsItemMax = 2000;
+
+export const saveContentInitiativeBodyImagePathsMax = 30;
+
+export const saveContentInitiativeBodySortOrderMin = 0;
+export const saveContentInitiativeBodySortOrderMax = 10000;
+
+
+
+export const SaveContentInitiativeBody = zod.object({
+  "title": zod.string().min(1).max(saveContentInitiativeBodyTitleMax),
+  "eyebrow": zod.string().max(saveContentInitiativeBodyEyebrowMax),
+  "body": zod.string().max(saveContentInitiativeBodyBodyMax),
+  "section": zod.enum(['core', 'csr', 'student', 'impact', 'event']),
+  "imagePaths": zod.array(zod.string().min(1).max(saveContentInitiativeBodyImagePathsItemMax)).max(saveContentInitiativeBodyImagePathsMax),
+  "sortOrder": zod.number().int().min(saveContentInitiativeBodySortOrderMin).max(saveContentInitiativeBodySortOrderMax)
+})
+
+export const saveContentInitiativeResponseOneTitleMax = 250;
+
+export const saveContentInitiativeResponseOneEyebrowMax = 250;
+
+export const saveContentInitiativeResponseOneBodyMax = 20000;
+
+export const saveContentInitiativeResponseOneImagePathsItemMax = 2000;
+
+export const saveContentInitiativeResponseOneImagePathsMax = 30;
+
+export const saveContentInitiativeResponseOneSortOrderMin = 0;
+export const saveContentInitiativeResponseOneSortOrderMax = 10000;
+
+
+
+export const SaveContentInitiativeResponse = zod.object({
+  "title": zod.string().min(1).max(saveContentInitiativeResponseOneTitleMax),
+  "eyebrow": zod.string().max(saveContentInitiativeResponseOneEyebrowMax),
+  "body": zod.string().max(saveContentInitiativeResponseOneBodyMax),
+  "section": zod.enum(['core', 'csr', 'student', 'impact', 'event']),
+  "imagePaths": zod.array(zod.string().min(1).max(saveContentInitiativeResponseOneImagePathsItemMax)).max(saveContentInitiativeResponseOneImagePathsMax),
+  "sortOrder": zod.number().int().min(saveContentInitiativeResponseOneSortOrderMin).max(saveContentInitiativeResponseOneSortOrderMax)
+}).and(zod.object({
+  "id": zod.string()
+}))
+
+
+/**
+ * @summary Remove an initiative (admin only)
+ */
+
+
+
+export const DeleteContentInitiativeParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const DeleteContentInitiativeResponse = zod.void()
+
+
+/**
  * Returns server health status
  * @summary Health check
  */

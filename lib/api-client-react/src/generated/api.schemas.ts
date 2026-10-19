@@ -5,6 +5,87 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type StoryContentInputTexts = {[key: string]: string};
+
+export interface StoryContentInput {
+  texts: StoryContentInputTexts;
+}
+
+export type ContentPartnerInputGroup = typeof ContentPartnerInputGroup[keyof typeof ContentPartnerInputGroup];
+
+
+export const ContentPartnerInputGroup = {
+  support: 'support',
+  exhibition: 'exhibition',
+  corporate: 'corporate',
+  college: 'college',
+} as const;
+
+export interface ContentPartnerInput {
+  /**
+     * @minLength 1
+     * @maxLength 250
+     */
+  name: string;
+  group: ContentPartnerInputGroup;
+  /** @maxLength 2000 */
+  logoPath: string;
+  /**
+     * @minimum 0
+     * @maximum 10000
+     */
+  sortOrder: number;
+}
+
+export type ContentPartner = ContentPartnerInput & {
+  id: string;
+};
+
+export type ContentInitiativeInputSection = typeof ContentInitiativeInputSection[keyof typeof ContentInitiativeInputSection];
+
+
+export const ContentInitiativeInputSection = {
+  core: 'core',
+  csr: 'csr',
+  student: 'student',
+  impact: 'impact',
+  event: 'event',
+} as const;
+
+export interface ContentInitiativeInput {
+  /**
+     * @minLength 1
+     * @maxLength 250
+     */
+  title: string;
+  /** @maxLength 250 */
+  eyebrow: string;
+  /** @maxLength 20000 */
+  body: string;
+  section: ContentInitiativeInputSection;
+  /**
+     * @maxItems 30
+     * @items.minLength 1
+     * @items.maxLength 2000
+     */
+  imagePaths: string[];
+  /**
+     * @minimum 0
+     * @maximum 10000
+     */
+  sortOrder: number;
+}
+
+export type ContentInitiative = ContentInitiativeInput & {
+  id: string;
+};
+
+export interface SiteContent {
+  story: StoryContentInput;
+  partners: ContentPartner[];
+  initiatives: ContentInitiative[];
+}
+
 export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
 
 

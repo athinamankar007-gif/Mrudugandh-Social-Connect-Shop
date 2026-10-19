@@ -17,6 +17,122 @@ tags:
   - name: orders
     description: Authenticated customer order history.
 paths:
+  /site-content:
+    get:
+      operationId: getSiteContent
+      summary: Public website content
+      responses:
+        "200":
+          description: Published website content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteContent"
+  /admin/content/story:
+    put:
+      operationId: saveStoryContent
+      summary: Save website text (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StoryContentInput"
+      responses:
+        "200":
+          description: Saved text
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoryContentInput"
+  /admin/content/partners:
+    post:
+      operationId: createContentPartner
+      summary: Add a collaborator (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentPartnerInput"
+      responses:
+        "201":
+          description: Created partner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentPartner"
+  /admin/content/partners/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, minLength: 1 }
+    put:
+      operationId: saveContentPartner
+      summary: Edit a collaborator (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentPartnerInput"
+      responses:
+        "200":
+          description: Saved partner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentPartner"
+    delete:
+      operationId: deleteContentPartner
+      summary: Remove a collaborator (admin only)
+      responses:
+        "204": { description: Deleted partner }
+  /admin/content/initiatives:
+    post:
+      operationId: createContentInitiative
+      summary: Add an initiative (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentInitiativeInput"
+      responses:
+        "201":
+          description: Created initiative
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentInitiative"
+  /admin/content/initiatives/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, minLength: 1 }
+    put:
+      operationId: saveContentInitiative
+      summary: Edit an initiative (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentInitiativeInput"
+      responses:
+        "200":
+          description: Saved initiative
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentInitiative"
+    delete:
+      operationId: deleteContentInitiative
+      summary: Remove an initiative (admin only)
+      responses:
+        "204": { description: Deleted initiative }
   /healthz:
     get:
       operationId: healthCheck
@@ -373,6 +489,66 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    StoryContentInput:
+      type: object
+      required: [texts]
+      properties:
+        texts:
+          type: object
+          maxProperties: 100
+          additionalProperties:
+            type: string
+            maxLength: 20000
+    ContentPartnerInput:
+      type: object
+      required: [name, group, logoPath, sortOrder]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 250 }
+        group:
+          type: string
+          enum: [support, exhibition, corporate, college]
+        logoPath: { type: string, maxLength: 2000 }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+    ContentPartner:
+      allOf:
+        - $ref: "#/components/schemas/ContentPartnerInput"
+        - type: object
+          required: [id]
+          properties:
+            id: { type: string }
+    ContentInitiativeInput:
+      type: object
+      required: [title, eyebrow, body, section, imagePaths, sortOrder]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 250 }
+        eyebrow: { type: string, maxLength: 250 }
+        body: { type: string, maxLength: 20000 }
+        section:
+          type: string
+          enum: [core, csr, student, impact, event]
+        imagePaths:
+          type: array
+          maxItems: 30
+          items: { type: string, minLength: 1, maxLength: 2000 }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+    ContentInitiative:
+      allOf:
+        - $ref: "#/components/schemas/ContentInitiativeInput"
+        - type: object
+          required: [id]
+          properties:
+            id: { type: string }
+    SiteContent:
+      type: object
+      required: [story, partners, initiatives]
+      properties:
+        story: { $ref: "#/components/schemas/StoryContentInput" }
+        partners:
+          type: array
+          items: { $ref: "#/components/schemas/ContentPartner" }
+        initiatives:
+          type: array
+          items: { $ref: "#/components/schemas/ContentInitiative" }
     Order:
       type: object
       properties:

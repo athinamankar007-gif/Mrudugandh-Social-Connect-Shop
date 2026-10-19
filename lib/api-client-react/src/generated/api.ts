@@ -21,6 +21,10 @@ import type {
 
 import type {
   CancelOrderInput,
+  ContentInitiative,
+  ContentInitiativeInput,
+  ContentPartner,
+  ContentPartnerInput,
   ErrorEnvelope,
   HealthStatus,
   Order,
@@ -34,6 +38,8 @@ import type {
   ReviewImageUploadUrlRequest,
   ReviewInput,
   ReviewUpdate,
+  SiteContent,
+  StoryContentInput,
   UploadUrlRequest,
   UploadUrlResponse
 } from './api.schemas';
@@ -64,6 +70,582 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetSiteContentUrl = () => {
+
+
+
+
+  return `/api/site-content`
+}
+
+/**
+ * @summary Public website content
+ */
+export const getSiteContent = async ( options?: Parameters<typeof customFetch>[1]): Promise<SiteContent> => {
+
+  return customFetch<SiteContent>(getGetSiteContentUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSiteContentQueryKey = () => {
+    return [
+    `/api/site-content`
+    ] as const;
+    }
+
+
+export const getGetSiteContentQueryOptions = <TData = Awaited<ReturnType<typeof getSiteContent>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSiteContent>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSiteContentQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSiteContent>>> = ({ signal }) => getSiteContent({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSiteContent>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSiteContentQueryResult = NonNullable<Awaited<ReturnType<typeof getSiteContent>>>
+export type GetSiteContentQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Public website content
+ */
+
+export function useGetSiteContent<TData = Awaited<ReturnType<typeof getSiteContent>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSiteContent>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSiteContentQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSaveStoryContentUrl = () => {
+
+
+
+
+  return `/api/admin/content/story`
+}
+
+/**
+ * @summary Save website text (admin only)
+ */
+export const saveStoryContent = async (storyContentInput: StoryContentInput, options?: Parameters<typeof customFetch>[1]): Promise<StoryContentInput> => {
+
+  return customFetch<StoryContentInput>(getSaveStoryContentUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(storyContentInput)
+  }
+);}
+
+
+
+
+
+export const getSaveStoryContentMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveStoryContent>>, TError,{data: BodyType<StoryContentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof saveStoryContent>>, TError,{data: BodyType<StoryContentInput>}, TContext> => {
+
+const mutationKey = ['saveStoryContent'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof saveStoryContent>>, {data: BodyType<StoryContentInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  saveStoryContent(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SaveStoryContentMutationResult = NonNullable<Awaited<ReturnType<typeof saveStoryContent>>>
+    export type SaveStoryContentMutationBody = BodyType<StoryContentInput>
+    export type SaveStoryContentMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Save website text (admin only)
+ */
+export const useSaveStoryContent = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveStoryContent>>, TError,{data: BodyType<StoryContentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof saveStoryContent>>,
+        TError,
+        {data: BodyType<StoryContentInput>},
+        TContext
+      > => {
+      return useMutation(getSaveStoryContentMutationOptions(options));
+    }
+
+export const getCreateContentPartnerUrl = () => {
+
+
+
+
+  return `/api/admin/content/partners`
+}
+
+/**
+ * @summary Add a collaborator (admin only)
+ */
+export const createContentPartner = async (contentPartnerInput: ContentPartnerInput, options?: Parameters<typeof customFetch>[1]): Promise<ContentPartner> => {
+
+  return customFetch<ContentPartner>(getCreateContentPartnerUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(contentPartnerInput)
+  }
+);}
+
+
+
+
+
+export const getCreateContentPartnerMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createContentPartner>>, TError,{data: BodyType<ContentPartnerInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createContentPartner>>, TError,{data: BodyType<ContentPartnerInput>}, TContext> => {
+
+const mutationKey = ['createContentPartner'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createContentPartner>>, {data: BodyType<ContentPartnerInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createContentPartner(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateContentPartnerMutationResult = NonNullable<Awaited<ReturnType<typeof createContentPartner>>>
+    export type CreateContentPartnerMutationBody = BodyType<ContentPartnerInput>
+    export type CreateContentPartnerMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Add a collaborator (admin only)
+ */
+export const useCreateContentPartner = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createContentPartner>>, TError,{data: BodyType<ContentPartnerInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createContentPartner>>,
+        TError,
+        {data: BodyType<ContentPartnerInput>},
+        TContext
+      > => {
+      return useMutation(getCreateContentPartnerMutationOptions(options));
+    }
+
+export const getSaveContentPartnerUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/content/partners/${id}`
+}
+
+/**
+ * @summary Edit a collaborator (admin only)
+ */
+export const saveContentPartner = async (id: string,
+    contentPartnerInput: ContentPartnerInput, options?: Parameters<typeof customFetch>[1]): Promise<ContentPartner> => {
+
+  return customFetch<ContentPartner>(getSaveContentPartnerUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(contentPartnerInput)
+  }
+);}
+
+
+
+
+
+export const getSaveContentPartnerMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveContentPartner>>, TError,{id: string;data: BodyType<ContentPartnerInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof saveContentPartner>>, TError,{id: string;data: BodyType<ContentPartnerInput>}, TContext> => {
+
+const mutationKey = ['saveContentPartner'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof saveContentPartner>>, {id: string;data: BodyType<ContentPartnerInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  saveContentPartner(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SaveContentPartnerMutationResult = NonNullable<Awaited<ReturnType<typeof saveContentPartner>>>
+    export type SaveContentPartnerMutationBody = BodyType<ContentPartnerInput>
+    export type SaveContentPartnerMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Edit a collaborator (admin only)
+ */
+export const useSaveContentPartner = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveContentPartner>>, TError,{id: string;data: BodyType<ContentPartnerInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof saveContentPartner>>,
+        TError,
+        {id: string;data: BodyType<ContentPartnerInput>},
+        TContext
+      > => {
+      return useMutation(getSaveContentPartnerMutationOptions(options));
+    }
+
+export const getDeleteContentPartnerUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/content/partners/${id}`
+}
+
+/**
+ * @summary Remove a collaborator (admin only)
+ */
+export const deleteContentPartner = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteContentPartnerUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteContentPartnerMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContentPartner>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteContentPartner>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteContentPartner'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteContentPartner>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteContentPartner(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteContentPartnerMutationResult = NonNullable<Awaited<ReturnType<typeof deleteContentPartner>>>
+
+    export type DeleteContentPartnerMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Remove a collaborator (admin only)
+ */
+export const useDeleteContentPartner = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContentPartner>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteContentPartner>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteContentPartnerMutationOptions(options));
+    }
+
+export const getCreateContentInitiativeUrl = () => {
+
+
+
+
+  return `/api/admin/content/initiatives`
+}
+
+/**
+ * @summary Add an initiative (admin only)
+ */
+export const createContentInitiative = async (contentInitiativeInput: ContentInitiativeInput, options?: Parameters<typeof customFetch>[1]): Promise<ContentInitiative> => {
+
+  return customFetch<ContentInitiative>(getCreateContentInitiativeUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(contentInitiativeInput)
+  }
+);}
+
+
+
+
+
+export const getCreateContentInitiativeMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createContentInitiative>>, TError,{data: BodyType<ContentInitiativeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createContentInitiative>>, TError,{data: BodyType<ContentInitiativeInput>}, TContext> => {
+
+const mutationKey = ['createContentInitiative'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createContentInitiative>>, {data: BodyType<ContentInitiativeInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createContentInitiative(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateContentInitiativeMutationResult = NonNullable<Awaited<ReturnType<typeof createContentInitiative>>>
+    export type CreateContentInitiativeMutationBody = BodyType<ContentInitiativeInput>
+    export type CreateContentInitiativeMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Add an initiative (admin only)
+ */
+export const useCreateContentInitiative = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createContentInitiative>>, TError,{data: BodyType<ContentInitiativeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createContentInitiative>>,
+        TError,
+        {data: BodyType<ContentInitiativeInput>},
+        TContext
+      > => {
+      return useMutation(getCreateContentInitiativeMutationOptions(options));
+    }
+
+export const getSaveContentInitiativeUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/content/initiatives/${id}`
+}
+
+/**
+ * @summary Edit an initiative (admin only)
+ */
+export const saveContentInitiative = async (id: string,
+    contentInitiativeInput: ContentInitiativeInput, options?: Parameters<typeof customFetch>[1]): Promise<ContentInitiative> => {
+
+  return customFetch<ContentInitiative>(getSaveContentInitiativeUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(contentInitiativeInput)
+  }
+);}
+
+
+
+
+
+export const getSaveContentInitiativeMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveContentInitiative>>, TError,{id: string;data: BodyType<ContentInitiativeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof saveContentInitiative>>, TError,{id: string;data: BodyType<ContentInitiativeInput>}, TContext> => {
+
+const mutationKey = ['saveContentInitiative'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof saveContentInitiative>>, {id: string;data: BodyType<ContentInitiativeInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  saveContentInitiative(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SaveContentInitiativeMutationResult = NonNullable<Awaited<ReturnType<typeof saveContentInitiative>>>
+    export type SaveContentInitiativeMutationBody = BodyType<ContentInitiativeInput>
+    export type SaveContentInitiativeMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Edit an initiative (admin only)
+ */
+export const useSaveContentInitiative = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveContentInitiative>>, TError,{id: string;data: BodyType<ContentInitiativeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof saveContentInitiative>>,
+        TError,
+        {id: string;data: BodyType<ContentInitiativeInput>},
+        TContext
+      > => {
+      return useMutation(getSaveContentInitiativeMutationOptions(options));
+    }
+
+export const getDeleteContentInitiativeUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/content/initiatives/${id}`
+}
+
+/**
+ * @summary Remove an initiative (admin only)
+ */
+export const deleteContentInitiative = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteContentInitiativeUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteContentInitiativeMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContentInitiative>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteContentInitiative>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteContentInitiative'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteContentInitiative>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteContentInitiative(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteContentInitiativeMutationResult = NonNullable<Awaited<ReturnType<typeof deleteContentInitiative>>>
+
+    export type DeleteContentInitiativeMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Remove an initiative (admin only)
+ */
+export const useDeleteContentInitiative = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContentInitiative>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteContentInitiative>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteContentInitiativeMutationOptions(options));
+    }
 
 export const getHealthCheckUrl = () => {
 

@@ -1,0 +1,22 @@
+Please update the website layout and admin panel with the following complete set of changes:
+1. Text and Translation Updates
+ In the hero section, under "More Than a Product — A Connection" and "Handmade with Purpose. Connected with Heart", remove the Marathi lines completely and keep only the English text.  
+ In the highlight callout box, under "A product carries more when you know where it begins", remove the Marathi line completely and keep only the English text.  
+ In the bottom banner, under "Choose the things that make room for a story", remove the Marathi line completely and keep only the English text.
+ In the Our Story section, replace the current Marathi paragraph for Mrudugandh Social Connect with this text:
+मृदुगंध सोशल कनेक्ट ही केवळ एक बाजारपेठ नाही, तर आपल्या मातीशी आणि माणसांशी जोडणारा एक सेतू आहे. तळागाळातील कारागीर, कष्टकरी महिला आणि स्थानिक उत्पादकांच्या हातातील कलेला हक्काचे व्यासपीठ मिळवून देणे, हा आमचा ध्यास आहे. प्रदर्शने, स्टॉल्स आणि थेट ग्राहकांपर्यंत पोहोचून आम्ही अस्सल हस्तकलेला शहराच्या घराघरांपर्यंत पोहोचवत आहोत.  
+1. CSR & Student Community Engagement Layout (Side-by-Side)
+ Next to / alongside the existing "Corporate Partnerships: Employee Engagement (CSR)" section, create a dedicated separate section titled "Student Community Engagement".  
+ Move the 2 student exhibition stall photos into this new Student Community Engagement section so they are clearly separate from corporate CSR.also add these 2 pictures in student community engagement 
+ Display both photos cleanly side-by-side (2-column layout) with their full aspect ratio, ensuring proper framing (⁠object-position: top center⁠ or ⁠object-fit: contain⁠) so that faces and heads are not cropped or cut off.  
+ In the corporate CSR section, keep the workshop/pottery activity photos without overlapping.
+ Add the cloth donation and other donation in photo donation initiatives block.
+1. Complete Admin Panel CMS & Product Editing Fixes
+ Fix the Edit Product drawer/modal: Currently, when clicking a product to edit, it opens in a very narrow, cramped column where inputs are cut off. Make this drawer much wider (at least 600px wide or a clean, centered modal dialog) so all product details, variants, descriptions, and images can be seen and edited comfortably.
+ Make the products table responsive to direct clicks: Clicking anywhere on a product row or card should directly open this enlarged Edit Product panel.
+ In the Product Images section of the edit drawer, add a delete/remove button (an X icon) on each uploaded image thumbnail so the admin can individually remove a photo and save the updated product.
+ Full CMS for Text, Paragraphs, and Partners: In the Admin Panel, build dedicated CMS management tabs connected to the database so admins can edit everything directly without touching code:
+a. "Our Story & Taglines": Editable text boxes for both English and Marathi paragraphs, mission statements, and taglines. When updated and saved, the text must change live on the public website.
+b. "Collaborations & Partners": A management tool to add new partner or collaborator names/logos, edit existing ones, or remove/delete any partner from the list.
+c. "Initiatives & Events": Allow admins to add new initiatives, edit existing initiative titles, body paragraphs, and photos (both CSR and Student Community Engagement), or delete old ones.
+ Ensure all text and image updates made in the admin panel are saved persistently to the database and reflect immediately on the live website.

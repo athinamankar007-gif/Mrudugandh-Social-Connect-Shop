@@ -1,4 +1,4 @@
-import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@clerk/react";
 import {
@@ -17,6 +17,7 @@ import {
   type ProductVariant,
 } from "@workspace/api-client-react";
 import { useUpload } from "@workspace/object-storage-web";
+import { CmsStoryTab, CmsPartnersTab, CmsInitiativesTab } from "./CmsTabs";
 import { Check, ImagePlus, Pencil, Plus, Save, Trash2, X, Package, MessageSquare, Settings } from "lucide-react";
 
 type Draft = {
@@ -74,6 +75,9 @@ const adminTabs = [
   { id: "products", label: "Products", icon: Package },
   { id: "orders", label: "Orders", icon: Package },
   { id: "reviews", label: "Reviews", icon: MessageSquare },
+  { id: "story", label: "Our Story & Taglines", icon: MessageSquare },
+  { id: "partners", label: "Collaborations & Partners", icon: Package },
+  { id: "initiatives", label: "Initiatives & Events", icon: Package },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const;
 
@@ -129,6 +133,8 @@ export default function AdminPanel() {
   const [draft, setDraft] = useState<Draft>(() => ({ ...emptyDraft, variants: [] }));
   const [notice, setNotice] = useState("");
   const [formError, setFormError] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  useEffect(() => { if (!modalOpen) return; const h = (e: KeyboardEvent) => { if (e.key === "Escape") setModalOpen(false); }; window.addEventListener("keydown", h); return () => window.removeEventListener("keydown", h); }, [modalOpen]);
   const [activeTab, setActiveTab] = useState<(typeof adminTabs)[number]["id"]>("products");
 
   const selectedProduct = useMemo(
@@ -143,6 +149,7 @@ export default function AdminPanel() {
   const selectProduct = (product: Product) => {
     setSelectedId(product.id);
     setDraft(toDraft(product));
+    setModalOpen(true);
     setNotice("");
     setFormError("");
   };
@@ -228,8 +235,9 @@ export default function AdminPanel() {
         setNotice("Product updated.");
       } else {
         await createProduct.mutateAsync({ data });
-        setNotice("Product added.");
         startNew();
+        setModalOpen(false);
+        setNotice("Product added.");
       }
       await refreshProducts();
     } catch (error) {
@@ -242,6 +250,7 @@ export default function AdminPanel() {
     try {
       await deleteProduct.mutateAsync({ id: draft.id });
       startNew();
+      setModalOpen(false);
       await refreshProducts();
       setNotice("Product deleted.");
     } catch (error) {
@@ -269,7 +278,7 @@ export default function AdminPanel() {
           <h1 className="mt-2 font-display text-5xl text-[#173b61]">Admin dashboard</h1>
           <p className="mt-3 text-sm text-[#547080]">Manage the products shown in the customer shop.</p>
         </div>
-        <button type="button" onClick={startNew} className="inline-flex items-center gap-2 rounded-full bg-[#173b61] px-5 py-3 text-sm font-bold text-white">
+        <button type="button" onClick={() => { setActiveTab("products"); startNew(); setModalOpen(true); }} className="inline-flex items-center gap-2 rounded-full bg-[#173b61] px-5 py-3 text-sm font-bold text-white">
           <Plus size={16} /> Add product
         </button>
       </div>
@@ -282,7 +291,7 @@ export default function AdminPanel() {
           <p className="px-3 pb-3 pt-2 text-xs font-bold uppercase tracking-[.16em] text-[#6a8390]">Dashboard</p>
           <div className="space-y-1">{adminTabs.map(({ id, label, icon: Icon }) => <button key={id} type="button" onClick={() => setActiveTab(id)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-bold ${activeTab === id ? "bg-[#e3f3f7] text-[#1688c6]" : "text-[#547080] hover:bg-[#f5fbfc]"}`}><Icon size={17} />{label}</button>)}</div>
         </aside>
-        {activeTab === "orders" ? <OrdersTab /> : activeTab === "reviews" ? <ReviewsTab /> : activeTab === "settings" ? <SettingsTab /> : <>
+        {activeTab === "orders" ? <OrdersTab /> : activeTab === "reviews" ? <ReviewsTab /> : activeTab === "story" ? <CmsStoryTab /> : activeTab === "partners" ? <CmsPartnersTab /> : activeTab === "initiatives" ? <CmsInitiativesTab /> : activeTab === "settings" ? <SettingsTab /> : <>
         <aside className="h-fit rounded-2xl border border-[#cfe5ea] bg-white p-3">
           <p className="px-3 pb-3 pt-2 text-xs font-bold uppercase tracking-[.16em] text-[#6a8390]">{products.length} products</p>
           <div className="space-y-4">
@@ -304,8 +313,10 @@ export default function AdminPanel() {
           </div>
         </aside>
 
-        <form onSubmit={saveProduct} className="rounded-2xl border border-[#cfe5ea] bg-white p-6 sm:p-8">
-          <div className="mb-7 flex items-start justify-between gap-4">
+        {modalOpen && <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#173b61]/50 p-3 sm:p-8" onMouseDown={(e) => { if (e.target === e.currentTarget) setModalOpen(false); }} role="dialog" aria-modal="true" aria-label="Edit product">
+        <form onSubmit={saveProduct} className="relative w-full max-w-[760px] min-w-0 rounded-2xl border border-[#cfe5ea] bg-white p-5 sm:min-w-[600px] sm:p-8">
+          <button type="button" onClick={() => setModalOpen(false)} aria-label="Close" className="absolute right-3 top-3 rounded-full p-2 text-[#31516a] hover:bg-[#e7f5f6]"><X size={18} /></button>
+          <div className="mb-7 flex items-start justify-between gap-4 pr-10">
             <div><p className="text-xs font-bold uppercase tracking-[.16em] text-[#1688c6]">{selectedProduct ? "Edit product" : "New product"}</p><h2 className="mt-2 font-display text-3xl text-[#173b61]">{draft.name || "Add a product"}</h2></div>
             {draft.id && <button type="button" onClick={removeProduct} className="inline-flex items-center gap-2 rounded-full border border-[#f2c7c2] px-4 py-2 text-xs font-bold text-[#a84e47] hover:bg-[#fff5f3]"><Trash2 size={14} /> Delete</button>}
           </div>
@@ -322,14 +333,14 @@ export default function AdminPanel() {
 
           <div className="mt-6 rounded-xl bg-[#f7fcfc] p-4">
              <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm font-bold text-[#31516a]">Product images</p><label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#9bcbd8] px-4 py-2 text-xs font-bold text-[#1688c6]"><ImagePlus size={14} /> {isUploading ? `Uploading ${progress}%` : "Upload images"}<input type="file" accept="image/*" multiple onChange={handleImage} disabled={isUploading} className="hidden" /></label></div>
-             {draft.imagePaths.length > 0 && <div className="mt-4 grid grid-cols-4 gap-2">{draft.imagePaths.map((path, index) => <div key={path} className="group relative overflow-hidden rounded-xl"><img src={imageUrl(path) ?? ""} alt={`Product image ${index + 1}`} className="aspect-square w-full object-cover" /><button type="button" onClick={() => setDraft((current) => { const imagePaths = current.imagePaths.filter((_, itemIndex) => itemIndex !== index); return { ...current, imagePaths, imagePath: imagePaths[0] ?? null }; })} className="absolute right-1 top-1 rounded-full bg-white/90 p-1 text-[#a84e47] opacity-0 shadow transition-opacity group-hover:opacity-100" aria-label={`Remove image ${index + 1}`}><X size={13} /></button></div>)}</div>}
+             {draft.imagePaths.length > 0 && <div className="mt-4 grid grid-cols-4 gap-2">{draft.imagePaths.map((path, index) => <div key={path} className="group relative overflow-hidden rounded-xl"><img src={imageUrl(path) ?? ""} alt={`Product image ${index + 1}`} className="aspect-square w-full object-cover" /><button type="button" onClick={() => setDraft((current) => { const imagePaths = current.imagePaths.filter((_, itemIndex) => itemIndex !== index); return { ...current, imagePaths, imagePath: imagePaths[0] ?? null }; })} className="absolute right-1 top-1 rounded-full bg-white p-2 text-[#a84e47] opacity-100 shadow" aria-label={`Remove image ${index + 1}`}><X size={13} /></button></div>)}</div>}
              <p className="mt-2 text-xs text-[#6a8390]">Upload multiple product photos together. Images are stored persistently and appear on the shop after saving.</p>
           </div>
 
           <div className="mt-6">
             <div className="flex items-center justify-between"><p className="text-sm font-bold text-[#31516a]">Variants</p><button type="button" onClick={() => setDraft({ ...draft, variants: [...draft.variants, { label: "", price: Number(draft.price) || 0, inventory: 0, imagePaths: [] }] })} className="inline-flex items-center gap-1 text-xs font-bold text-[#1688c6]"><Plus size={14} /> Add variant</button></div>
             <div className="mt-3 space-y-4">{draft.variants.map((variant, index) => (
-              <div key={`${index}-${variant.label}`} className="rounded-xl border border-[#cfe5ea] bg-white p-4">
+              <div key={`variant-${index}`} className="rounded-xl border border-[#cfe5ea] bg-white p-4">
                 <div className="flex flex-wrap items-start gap-3">
                   <label className="flex-1 min-w-[120px] text-xs font-semibold text-[#31516a]">Label
                     <input value={variant.label} placeholder="e.g. Single" onChange={(event) => setDraft({ ...draft, variants: draft.variants.map((item, itemIndex) => itemIndex === index ? { ...item, label: event.target.value } : item) })} className="mt-1 w-full rounded-lg border border-[#cfe5ea] bg-white px-3 py-2 text-sm outline-none focus:border-[#1688c6]" />
@@ -362,7 +373,7 @@ export default function AdminPanel() {
                               imagePaths: (newVariants[index].imagePaths || []).filter((_, i) => i !== pIndex)
                             };
                             return { ...current, variants: newVariants };
-                          })} className="absolute right-0.5 top-0.5 rounded-full bg-white/90 p-0.5 text-[#a84e47] opacity-0 shadow transition-opacity group-hover:opacity-100" aria-label="Remove variant image"><X size={12} /></button>
+                          })} className="absolute right-0.5 top-0.5 rounded-full bg-white p-1.5 text-[#a84e47] opacity-100 shadow" aria-label="Remove variant image"><X size={12} /></button>
                         </div>
                       ))}
                     </div>
@@ -374,7 +385,7 @@ export default function AdminPanel() {
 
           <label className="mt-6 flex items-center gap-3 text-sm font-semibold text-[#31516a]"><input type="checkbox" checked={draft.available} onChange={(event) => setDraft({ ...draft, available: event.target.checked })} className="h-4 w-4 accent-[#1688c6]" /> Show this product in the shop</label>
           <button disabled={busy || isUploading} type="submit" className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#1688c6] px-6 py-3.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"><Save size={16} /> {busy ? "Saving..." : "Save product"}</button>
-        </form>
+        </form></div>}
         </>}
       </div>
     </div>
