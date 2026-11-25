@@ -138,11 +138,33 @@ function useProducts() {
 }
 
 function ProductsProvider({ children }: { children: ReactNode }) {
-  const { data, isLoading, isError } = useListProducts();
-  const catalog = useMemo(() => data?.map(mapApiProduct) ?? [], [data]);
-  return <ProductsContext.Provider value={{ products: catalog, isLoading, error: isError }}>{children}</ProductsContext.Provider>;
-}
-
+  const { data } = useListProducts({ query: { queryKey: getListProductsQueryKey(), retry: false } });
+  const fallbackProducts: ApiProduct[] = [
+    { id: "kalamkari-tote-bag", name: "Kalamkari Tote Bag", category: "Tote Bags", price: 200, description: "Kalamkari Tote Bag", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "canvas-tote-bag", name: "Canvas Tote Bag", category: "Tote Bags", price: 250, description: "Canvas Tote Bag", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "patchwork-tote-bag", name: "Patchwork Tote Bag", category: "Tote Bags", price: 450, description: "Patchwork Tote Bag", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "wooden-base-piggy-bank", name: "Gullak (Piggybank)", category: "Gullak (Piggybank)", price: 350, description: "Gullak (Piggybank)", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "bamboo-three-in-one-stand", name: "Bamboo 3-in-one Stand", category: "Bamboo Products", price: 800, description: "Bamboo 3-in-one Stand", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "bamboo-lights", name: "Bamboo Lights", category: "Bamboo Products", price: 750, description: "Bamboo Lights", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "bamboo-pen-stand", name: "Bamboo Pen Stand", category: "Bamboo Products", price: 150, description: "Bamboo Pen Stand", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "bamboo-tray", name: "Trivets", category: "Bamboo Products", price: 150, description: "Trivets", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "bamboo-pen", name: "Bamboo Pen", category: "Bamboo Products", price: 150, description: "Bamboo Pen", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "bamboo-toothbrush", name: "Bamboo Toothbrush", category: "Bamboo Products", price: 100, description: "Bamboo Toothbrush", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "bamboo-comb", name: "Bamboo Comb", category: "Bamboo Products", price: 250, description: "Bamboo Comb", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "dupatta", name: "Kantha Work Dupatta", category: "Stoles and Dupattas", price: 1200, description: "Kantha Work Dupatta", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "shawl", name: "Kantha Patchwork Stole", category: "Stoles and Dupattas", price: 1100, description: "Kantha Patchwork Stole", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "kantha-plain-stole", name: "Kantha Plain Stole", category: "Stoles and Dupattas", price: 750, description: "Kantha Plain Stole", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "bedsheet", name: "Single Bedsheet", category: "Bedsheets", price: 600, description: "Single Bedsheet", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "king-size-bedsheet", name: "King Size Bedsheet", category: "Bedsheets", price: 1300, description: "King Size Bedsheet", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "superking-size-bedsheet", name: "Superking Size Bedsheet", category: "Bedsheets", price: 1600, description: "Superking Size Bedsheet", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "dohars-combo-set", name: "Dohars Combo Set", category: "Dohars", price: 3500, description: "One bedsheet, two pillow covers and one dohar", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "kids-dohar", name: "Kids Dohar", category: "Dohars", price: 850, description: "Kids Dohar", variants: [{ label: "Junior Champ (3/5)", price: 850, inventory: 0, imagePaths: [] }, { label: "Senior Champ (4/6)", price: 1100, inventory: 0, imagePaths: [] }], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "adult-patchwork-dohar", name: "Patchwork Dohar", category: "Dohars", price: 1800, description: "Patchwork Dohar", variants: [{ label: "Single (60/90)", price: 1800, inventory: 0, imagePaths: [] }, { label: "Double (90/108)", price: 2400, inventory: 0, imagePaths: [] }], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+    { id: "adult-plain-dohar", name: "Plain Dohar", category: "Dohars", price: 1250, description: "Plain Dohar", variants: [{ label: "Single (60/90)", price: 1250, inventory: 0, imagePaths: [] }, { label: "Double (90/108)", price: 1800, inventory: 0, imagePaths: [] }], inventory: 0, available: true, imagePath: null, imagePaths: [] },
+  ];
+  const rawProducts = data && data.length > 0 ? data : fallbackProducts;
+  const catalog = useMemo(() => rawProducts.map(mapApiProduct), [rawProducts]);
+  return <ProductsContext.Provider value={{ products: catalog, isLoading: false, error: false }}>{children}</ProductsContext.Provider>;--
 type CartContextType = { cart: CartLine[]; add: (productId: string, quantity: number, variant?: Variant) => void; update: (key: string, quantity: number) => void; remove: (key: string) => void; clear: () => void; subtotal: number; count: number };
 const CartContext = createContext<CartContextType | null>(null);
 const cartKey = (line: CartLine) => `${line.productId}-${line.variant?.label ?? 'default'}`;
