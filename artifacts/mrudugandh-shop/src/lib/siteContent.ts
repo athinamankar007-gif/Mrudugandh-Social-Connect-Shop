@@ -2,7 +2,7 @@ import { useGetSiteContent, getGetSiteContentQueryKey } from '@workspace/api-cli
 
 export function useSiteContent() {
   const q = useGetSiteContent({ query: { queryKey: getGetSiteContentQueryKey(), refetchInterval: 10000, refetchOnWindowFocus: true, refetchOnMount: 'always' } });
-  const texts = q.data?.story.texts ?? {};
+  const texts = q.data?.story?.texts ?? {};
   return {
     isLoading: q.isLoading, isError: q.isError, refetch: q.refetch, loaded: !!q.data,
     t: (key: string) => texts[key] ?? '',
