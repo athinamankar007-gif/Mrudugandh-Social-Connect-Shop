@@ -21,7 +21,7 @@ export function AboutContent({ Shell }: { Shell: (p: { children: ReactNode }) =>
   const c = useSiteContent();
   const blocked = (c.isLoading || (c.isError && !c.loaded)) ? <ContentState isLoading={c.isLoading} isError={c.isError} retry={() => c.refetch()} /> : null;
   if (blocked) return <Shell>{blocked}</Shell>;
-  const t = (c.t ?? {}) as Record<string, string>;
+  const t = typeof c.t === 'function' ? c.t : (k: string) => k;
   const title = t('aboutTitle');
   const dash = title.lastIndexOf('—');
   return <Shell>
