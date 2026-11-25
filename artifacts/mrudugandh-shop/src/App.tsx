@@ -164,7 +164,8 @@ function ProductsProvider({ children }: { children: ReactNode }) {
   ];
   const rawProducts = data && data.length > 0 ? data : fallbackProducts;
   const catalog = useMemo(() => rawProducts.map(mapApiProduct), [rawProducts]);
-  return <ProductsContext.Provider value={{ products: catalog, isLoading: false, error: false }}>{children}</ProductsContext.Provider>;--
+  return <ProductsContext.Provider value={{ products: catalog, isLoading: false, error: false }}>{children}</ProductsContext.Provider>;
+}
 type CartContextType = { cart: CartLine[]; add: (productId: string, quantity: number, variant?: Variant) => void; update: (key: string, quantity: number) => void; remove: (key: string) => void; clear: () => void; subtotal: number; count: number };
 const CartContext = createContext<CartContextType | null>(null);
 const cartKey = (line: CartLine) => `${line.productId}-${line.variant?.label ?? 'default'}`;
