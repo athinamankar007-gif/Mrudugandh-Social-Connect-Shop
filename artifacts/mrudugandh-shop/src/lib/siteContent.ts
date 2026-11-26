@@ -54,4 +54,4 @@ export function useSiteContent() {
     partners: [...partners].sort((a, b) => a.sortOrder - b.sortOrder),
     initiatives: [...initiatives].sort((a, b) => a.sortOrder - b.sortOrder),
   };
-}---
+}
