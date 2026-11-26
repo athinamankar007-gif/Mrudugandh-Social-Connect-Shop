@@ -138,7 +138,7 @@ function useProducts() {
 }
 
 function ProductsProvider({ children }: { children: ReactNode }) {
-  const { data } = useListProducts({ query: { queryKey: getListProductsQueryKey(), retry: false } });
+  const { data } = useListProducts();
   const fallbackProducts: ApiProduct[] = [
     { id: "kalamkari-tote-bag", name: "Kalamkari Tote Bag", category: "Tote Bags", price: 200, description: "Kalamkari Tote Bag", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
     { id: "canvas-tote-bag", name: "Canvas Tote Bag", category: "Tote Bags", price: 250, description: "Canvas Tote Bag", variants: [], inventory: 0, available: true, imagePath: null, imagePaths: [] },
