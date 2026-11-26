@@ -1,15 +1,15 @@
 import { useGetSiteContent, getGetSiteContentQueryKey } from '@workspace/api-client-react';
-
-const DEFAULT_TEXTS: Record<string, string> = {
+ const DEFAULT_TEXTS: Record<string, string> = {
   aboutEyebrow: "The heart of the shop",
   aboutTitle: "More than a Product - A Connection.",
   tagline: "Handmade with Purpose. Connected with Heart.",
   aboutCallout: "A product carries more when you know where it begins.",
-  aboutParagraph1: "Mrudugandh Social Connect is a social enterprise initiative dedicated to creating sustainable market access for grassroots products, women entrepreneurs, and traditional artisans.",
+  aboutParagraph1: "Mrudugandh Social Connect is a social enterprise initiative dedicated to creating sustainable market access for grassroots products, women entrepreneurs, artisans, underprivileged communities, and urban customers through purposeful action.",
   aboutParagraph2: "मृदुगंध सोशल कनेक्ट ही एक सामाजिक उपक्रम संस्था आहे, जी ग्रामीण कारागीर, महिला उद्योजक आणि बचत गटांना थेट बाजारपेठ उपलब्ध करून देण्यासाठी कार्यरत आहे.",
-  aboutQuote: "Choose the things that make room for a story.",
-  missionTitle: "Our Mission",
-  missionBody: "Empowering local artisans and self-help groups through fair, direct-to-consumer market access and eco-conscious craftsmanship.",
+  aboutBanner: "Choose the things that make room for a story.",
+  mission1: "Empowering local artisans and self-help groups through fair, direct-to-consumer market access and eco-conscious craftsmanship.",
+  mission2: "Bridging rural craftsmanship with conscious urban consumers while promoting zero-plastic, sustainable living.",
+  mission3: "Providing hands-on community engagement, corporate CSR workshops, and student learning opportunities that create lasting social impact.",
   initiativesTitle: "Our Initiatives & Network",
   initiativesIntro: "Connecting grassroots products, women entrepreneurs, artisans, underprivileged communities, and urban customers through purposeful action.",
   coreHeading: "Core Initiatives Profile",
@@ -22,6 +22,7 @@ const DEFAULT_TEXTS: Record<string, string> = {
   supportHeading: "We Support",
   exhibitionHeading: "Exhibitions",
   corporateHeading: "Corporate Partners",
+};
 };
 
 const DEFAULT_PARTNERS = [
