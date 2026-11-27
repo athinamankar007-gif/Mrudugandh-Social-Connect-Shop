@@ -41,7 +41,7 @@ export function AboutContent({ Shell }: { Shell: (p: { children: ReactNode }) =>
     </section>
     <section className="bg-[#173b61] text-white"><div className="mx-auto max-w-6xl px-5 py-20 text-center lg:py-24">
       {t('aboutBanner') && <p className="mx-auto max-w-2xl font-display text-4xl leading-tight sm:text-5xl">{t('aboutBanner')}</p>}
-      <div className="mt-8 flex flex-wrap justify-center gap-3"><Link href="/shop" className="inline-flex items-center gap-2 rounded-full bg-[#efb34f] px-6 py-3.5 text-sm font-bold text-[#173b61]" data-testid="link-about-shop">Explore the collection <ArrowRight size={16} /></Link><a href="https://docs.google.com/forms/d/1pYcyZPJkmnSDP6P7OljPg9-xHsjc26XTORoi2aUPX3Y/edit?usp=drivesdk" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-[#8eb7c5] px-6 py-3.5 text-sm font-bold text-white hover:bg-white/10" data-testid="link-volunteer-registration">Volunteer Registration Link <ArrowRight size={16} /></a></div>
+      <div className="mt-8 flex flex-wrap justify-center gap-3"><Link href="/shop" className="inline-flex items-center gap-2 rounded-full bg-[#efb34f] px-6 py-3.5 text-sm font-bold text-[#173b61]" data-testid="link-about-shop">Explore the collection <ArrowRight size={16} /></Link><a href="https://forms.gle/jitK4YYYUQXvJgNi9" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-[#8eb7c5] px-6 py-3.5 text-sm font-bold text-white hover:bg-white/10" data-testid="link-volunteer-registration">Volunteer Registration Link <ArrowRight size={16} /></a></div>
     </div></section>
   </Shell>;
 }
